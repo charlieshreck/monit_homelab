@@ -1,0 +1,59 @@
+# ============================================================================
+# Git Ignore - Monitoring Homelab
+# ============================================================================
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/terraform.tfstate.backup
+**/.terraform.tfstate.lock.info
+**/terraform.tfvars
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+**/.terraformrc
+**/terraform.rc
+**/crash.log
+**/crash.*.log
+
+# Kubeconfig files (contain cluster credentials)
+**/kubeconfig
+**/kubeconfig.*
+**/.kube/
+**/k3s.yaml
+**/monitoring-k3s.yaml
+
+# Environment files
+**/.env
+**/.env.*
+**/secrets.env
+**/*-creds.env
+
+# SSH Keys
+**/*.pem
+**/*.key
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
+
+# Ansible
+**/ansible/vault-password.txt
+**/ansible/vault-*.txt
+**/*.vault
+
+# General
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+**/*.swp
+**/*.swo
+**/*~
+**/.vscode/
+**/.idea/
+
+# Generated files
+**/generated/
+**/output/
