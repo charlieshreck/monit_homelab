@@ -27,6 +27,12 @@ export TF_VAR_production_proxmox_host="https://10.10.0.10:8006"
 export TF_VAR_production_proxmox_user="root@pam"
 export TF_VAR_production_proxmox_password="your-production-password-here"
 export TF_VAR_production_proxmox_node="Ruapehu"
+
+# ============================================================================
+# TrueNAS Configuration (10.30.0.120)
+# ============================================================================
+export TF_VAR_truenas_host="10.30.0.120"
+export TF_VAR_truenas_api_key="your-truenas-api-key-here"
 EOF
 
 # Secure the file
@@ -63,6 +69,22 @@ Only needed if you plan cross-cluster operations:
 | `TF_VAR_production_proxmox_user` | `root@pam` | Proxmox API user |
 | `TF_VAR_production_proxmox_password` | `your-password` | Proxmox password |
 | `TF_VAR_production_proxmox_node` | `Ruapehu` | Proxmox node name |
+
+### TrueNAS Configuration
+
+Required for Phase 2 (monitoring stack) to scrape TrueNAS metrics:
+
+| Variable | Value | Description |
+|----------|-------|-------------|
+| `TF_VAR_truenas_host` | `10.30.0.120` | TrueNAS IP address on Carrick |
+| `TF_VAR_truenas_api_key` | `1-arHBVno...` | TrueNAS API key for metrics scraping |
+
+**To get TrueNAS API key:**
+1. Login to TrueNAS UI: http://10.30.0.120
+2. Settings → API Keys
+3. Click "Add" to create new key
+4. Name: "Prometheus Monitoring"
+5. Copy the generated key
 
 ### LXC Configuration Overrides
 
