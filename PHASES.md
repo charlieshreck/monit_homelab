@@ -6,9 +6,9 @@
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ Proxmox Carrick (10.30.0.10)                                                │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
-│ │ TrueNAS VM/LXC (Network: 10.40.0.0/24)                                  │ │
+│ │ TrueNAS VM/LXC (10.30.0.120 - Same network as K3s)                     │ │
 │ │ ┌──────────────────────────────────────────────────────────────────────┐│ │
-│ │ │ NVMe-oF Exports:                                                     ││ │
+│ │ │ NVMe-oF/NFS Exports:                                                 ││ │
 │ │ │ - Restormal (200GB) → VictoriaMetrics storage                       ││ │
 │ │ │ - Trelawney (500GB) → VictoriaLogs storage                          ││ │
 │ │ └──────────────────────────────────────────────────────────────────────┘│ │
@@ -115,7 +115,7 @@ ssh root@10.30.0.20
 **Storage Configuration:**
 
 ```yaml
-# VictoriaMetrics PV (from TrueNAS Restormal via NVMe-oF)
+# VictoriaMetrics PV (from TrueNAS Restormal via NFS)
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -125,10 +125,10 @@ spec:
     storage: 200Gi
   accessModes: [ReadWriteOnce]
   nfs:
-    server: 10.40.0.10  # TrueNAS on Carrick
+    server: 10.30.0.120  # TrueNAS on Carrick
     path: /mnt/Restormal/victoria-metrics
 
-# VictoriaLogs PV (from TrueNAS Trelawney via NVMe-oF)
+# VictoriaLogs PV (from TrueNAS Trelawney via NFS)
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -138,7 +138,7 @@ spec:
     storage: 500Gi
   accessModes: [ReadWriteOnce]
   nfs:
-    server: 10.40.0.10  # TrueNAS on Carrick
+    server: 10.30.0.120  # TrueNAS on Carrick
     path: /mnt/Trelawney/victoria-logs
 ```
 
@@ -210,7 +210,7 @@ kubectl apply -f /home/prod_homelab/kubernetes/argocd/multi-repo-appset.yaml
 | Plex VM | Node Exporter | 10.10.0.50 | 9100 | Host metrics, GPU usage |
 | OPNsense | OPNsense Exporter | 10.10.0.1 | 9273 | Firewall, traffic, VPN |
 | AdGuard | AdGuard Exporter | 10.10.0.1 | 9617 | DNS queries, blocking |
-| TrueNAS (Carrick) | TrueNAS API | 10.40.0.10 | 443 | Storage, NVMe-oF stats |
+| TrueNAS (Carrick) | TrueNAS API | 10.30.0.120 | 443 | Storage, NFS stats |
 
 **Beszel Agents:** Deploy to all hosts for resource monitoring
 **Gatus Endpoints:** Configure health checks for all services
@@ -244,20 +244,17 @@ kubectl apply -f /home/prod_homelab/kubernetes/argocd/multi-repo-appset.yaml
 ┌─────────────────────────────────────────────────────────────────┐
 │ Monitoring Network (vmbr0): 10.30.0.0/24                       │
 │ ├─ Proxmox Carrick: 10.30.0.10                                 │
-│ └─ K3s Monitor: 10.30.0.20                                     │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ TrueNAS Network (vmbr3): 10.40.0.0/24                          │
-│ └─ TrueNAS (on Carrick): 10.40.0.10                            │
-│    └─ NVMe-oF Exports: Restormal, Trelawney                    │
+│ ├─ K3s Monitor: 10.30.0.20                                     │
+│ └─ TrueNAS: 10.30.0.120                                        │
+│    └─ NFS Exports: Restormal (200GB), Trelawney (500GB)        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 **Network Routing:**
 - K3s Monitor (10.30.0.20) can scrape Production (10.10.0.0/24) via routing
-- K3s Monitor can mount NFS from TrueNAS (10.40.0.10) via vmbr3
+- K3s Monitor can mount NFS from TrueNAS (10.30.0.120) - same network
 - Production cluster cannot reach monitoring (one-way monitoring)
+- Simplified topology: TrueNAS on same network as K3s (10.30.0.0/24)
 
 ---
 
@@ -274,7 +271,7 @@ kubectl apply -f /home/prod_homelab/kubernetes/argocd/multi-repo-appset.yaml
 **NFS Mount:**
 ```yaml
 nfs:
-  server: 10.40.0.10
+  server: 10.30.0.120
   path: /mnt/Restormal/victoria-metrics
 ```
 
@@ -288,7 +285,7 @@ nfs:
 **NFS Mount:**
 ```yaml
 nfs:
-  server: 10.40.0.10
+  server: 10.30.0.120
   path: /mnt/Trelawney/victoria-logs
 ```
 
@@ -336,10 +333,10 @@ All sensitive values stored in Infisical `/monitoring` folder:
 ### 1. Verify TrueNAS is Ready
 
 ```bash
-# SSH to TrueNAS (on Carrick, e.g., 10.40.0.10)
-ssh root@10.40.0.10
+# SSH to TrueNAS (on Carrick at 10.30.0.120)
+ssh root@10.30.0.120
 
-# Check NVMe-oF exports
+# Check NFS exports and datasets
 zfs list | grep -E 'Restormal|Trelawney'
 
 # Create datasets if needed
@@ -362,14 +359,14 @@ ssh root@10.30.0.20
 apt-get update && apt-get install -y nfs-common
 
 # Test mount
-showmount -e 10.40.0.10
+showmount -e 10.30.0.120
 # Should show:
 # /mnt/Restormal/victoria-metrics 10.30.0.20
 # /mnt/Trelawney/victoria-logs 10.30.0.20
 
 # Test actual mount
 mkdir -p /mnt/test-restormal
-mount -t nfs 10.40.0.10:/mnt/Restormal/victoria-metrics /mnt/test-restormal
+mount -t nfs 10.30.0.120:/mnt/Restormal/victoria-metrics /mnt/test-restormal
 df -h | grep restormal
 # Should show mounted filesystem
 
