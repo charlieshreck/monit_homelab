@@ -64,39 +64,55 @@ spec:
                 params:
                   format: ['prometheus']
 
-              # Production Talos Cluster - Kubelet Metrics
+              # Production Talos Cluster - Kubelet Metrics (via API server proxy)
               - job_name: 'talos-kubelets'
                 scheme: https
                 tls_config:
                   ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
                   insecure_skip_verify: false
                 bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
-                static_configs:
-                  - targets:
-                    - '10.10.0.40:10250'  # talos-cp-01
-                    - '10.10.0.41:10250'  # talos-worker-01
-                    - '10.10.0.42:10250'  # talos-worker-02
-                    - '10.10.0.43:10250'  # talos-worker-03
-                    labels:
-                      cluster: 'production'
-                metrics_path: '/metrics'
+                kubernetes_sd_configs:
+                  - role: node
+                    api_server: 'https://10.10.0.40:6443'
+                    tls_config:
+                      ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                    bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                relabel_configs:
+                  - action: labelmap
+                    regex: __meta_kubernetes_node_label_(.+)
+                  - target_label: __address__
+                    replacement: 10.10.0.40:6443
+                  - source_labels: [__meta_kubernetes_node_name]
+                    regex: (.+)
+                    target_label: __metrics_path__
+                    replacement: /api/v1/nodes/${1}/proxy/metrics
+                  - target_label: cluster
+                    replacement: production
 
-              # Production Talos Cluster - cAdvisor Metrics
+              # Production Talos Cluster - cAdvisor Metrics (via API server proxy)
               - job_name: 'talos-cadvisor'
                 scheme: https
                 tls_config:
                   ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
                   insecure_skip_verify: false
                 bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
-                static_configs:
-                  - targets:
-                    - '10.10.0.40:10250'
-                    - '10.10.0.41:10250'
-                    - '10.10.0.42:10250'
-                    - '10.10.0.43:10250'
-                    labels:
-                      cluster: 'production'
-                metrics_path: '/metrics/cadvisor'
+                kubernetes_sd_configs:
+                  - role: node
+                    api_server: 'https://10.10.0.40:6443'
+                    tls_config:
+                      ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                    bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                relabel_configs:
+                  - action: labelmap
+                    regex: __meta_kubernetes_node_label_(.+)
+                  - target_label: __address__
+                    replacement: 10.10.0.40:6443
+                  - source_labels: [__meta_kubernetes_node_name]
+                    regex: (.+)
+                    target_label: __metrics_path__
+                    replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+                  - target_label: cluster
+                    replacement: production
 
               # Production Talos Cluster - API Server
               - job_name: 'talos-apiserver'
