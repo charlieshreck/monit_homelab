@@ -51,6 +51,12 @@ spec:
             additionalScrapeConfigs:
               # Proxmox Ruapehu (production)
               - job_name: 'proxmox-ruapehu'
+                scheme: https
+                tls_config:
+                  insecure_skip_verify: true
+                basic_auth:
+                  username: root@pam
+                  password: H4ckwh1z
                 static_configs:
                   - targets: ['10.10.0.10:8006']
                 metrics_path: '/api2/prometheus'
@@ -58,6 +64,12 @@ spec:
                   format: ['prometheus']
               # Proxmox Carrick (monitoring)
               - job_name: 'proxmox-carrick'
+                scheme: https
+                tls_config:
+                  insecure_skip_verify: true
+                basic_auth:
+                  username: root@pam
+                  password: H4ckwh1z
                 static_configs:
                   - targets: ['10.30.0.10:8006']
                 metrics_path: '/api2/prometheus'
@@ -127,12 +139,17 @@ spec:
                       cluster: 'production'
                 metrics_path: '/metrics'
 
-              # K3s monitoring cluster
+              # K3s monitoring cluster - kubelet metrics
               - job_name: 'k3s-monitor'
+                scheme: https
+                tls_config:
+                  insecure_skip_verify: true
+                bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
                 static_configs:
                   - targets: ['10.30.0.20:10250']
                     labels:
                       cluster: 'monitoring'
+                metrics_path: '/metrics'
 
         # Grafana configuration
         grafana:
