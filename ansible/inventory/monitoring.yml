@@ -1,0 +1,35 @@
+---
+# ============================================================================
+# Ansible Inventory for Monitoring K3s LXC
+# ============================================================================
+# Usage:
+#   export ANSIBLE_LXC_PASSWORD="your_password"
+#   ansible-playbook -i inventory/monitoring.yml playbooks/01-base-lxc.yml
+# ============================================================================
+
+all:
+  hosts:
+    k3s_monitor:
+      ansible_host: 10.30.0.20
+      ansible_user: root
+      ansible_password: "{{ lookup('env', 'ANSIBLE_LXC_PASSWORD') }}"
+      ansible_python_interpreter: /usr/bin/python3
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  vars:
+    # Network Configuration
+    monitoring_network: 10.30.0.0/24
+    k3s_cluster_cidr: 10.42.0.0/16
+    k3s_service_cidr: 10.43.0.0/16
+
+    # K3s Configuration
+    k3s_version: stable
+    k3s_server_ip: 10.30.0.20
+    k3s_disable_components:
+      - traefik
+      - servicelb
+      - local-storage
+    k3s_flannel_backend: host-gw
+
+    # Kubeconfig destination (on control node - iac LXC)
+    kubeconfig_dest: ~/.kube/monitoring-k3s.yaml

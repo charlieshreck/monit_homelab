@@ -1,0 +1,160 @@
+---
+# ============================================================================
+# Playbook 2: K3s Installation
+# ============================================================================
+# This playbook installs K3s on a prepared LXC container and retrieves
+# the kubeconfig to the control node (iac LXC).
+#
+# Prerequisites:
+#   - 01-base-lxc.yml has been run successfully
+#   - LXC has proper network connectivity
+#
+# Usage:
+#   export ANSIBLE_LXC_PASSWORD="your_password"
+#   ansible-playbook -i inventory/monitoring.yml playbooks/02-k3s-install.yml
+#
+# Idempotent: Safe to re-run (K3s install script handles upgrades)
+# ============================================================================
+
+- name: Install K3s on monitoring LXC
+  hosts: k3s_monitor
+  become: yes
+  gather_facts: yes
+
+  pre_tasks:
+    - name: Check for LXC password
+      fail:
+        msg: "ANSIBLE_LXC_PASSWORD environment variable is required"
+      when: lookup('env', 'ANSIBLE_LXC_PASSWORD') == ''
+      delegate_to: localhost
+      run_once: true
+
+    - name: Verify /dev/kmsg exists
+      stat:
+        path: /dev/kmsg
+      register: kmsg_verify
+      failed_when: not kmsg_verify.stat.exists
+
+    - name: Display pre-installation info
+      debug:
+        msg:
+          - "Installing K3s {{ k3s_version }}"
+          - "Server IP: {{ k3s_server_ip }}"
+          - "Disabled components: {{ k3s_disable_components | join(', ') }}"
+
+  tasks:
+    # ========================================================================
+    # K3s Installation
+    # ========================================================================
+    - name: Check if K3s is already installed
+      stat:
+        path: /usr/local/bin/k3s
+      register: k3s_binary
+
+    - name: Install K3s
+      shell: |
+        curl -sfL https://get.k3s.io | sh -s - \
+          --disable {{ k3s_disable_components | join(',') }} \
+          --flannel-backend={{ k3s_flannel_backend }} \
+          --write-kubeconfig-mode=644 \
+          --cluster-cidr={{ k3s_cluster_cidr }} \
+          --service-cidr={{ k3s_service_cidr }} \
+          --kubelet-arg="feature-gates=KubeletInUserNamespace=true" \
+          --kube-apiserver-arg="feature-gates=KubeletInUserNamespace=true"
+      args:
+        creates: /usr/local/bin/k3s
+      register: k3s_install
+      environment:
+        INSTALL_K3S_CHANNEL: "{{ k3s_version }}"
+
+    - name: Wait for K3s to be ready
+      command: k3s kubectl get nodes
+      register: k3s_nodes
+      until: k3s_nodes.stdout.find('Ready') != -1
+      retries: 12
+      delay: 10
+      changed_when: false
+
+    # ========================================================================
+    # Kubeconfig Configuration
+    # ========================================================================
+    - name: Fix kubeconfig server address
+      replace:
+        path: /etc/rancher/k3s/k3s.yaml
+        regexp: 'https://127\.0\.0\.1:6443'
+        replace: 'https://{{ k3s_server_ip }}:6443'
+
+    - name: Create root .kube directory
+      file:
+        path: /root/.kube
+        state: directory
+        mode: '0700'
+
+    - name: Copy kubeconfig to root home
+      copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /root/.kube/config
+        remote_src: yes
+        mode: '0600'
+
+    # ========================================================================
+    # Retrieve kubeconfig to control node
+    # ========================================================================
+    - name: Fetch kubeconfig from K3s LXC
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ kubeconfig_dest }}"
+        flat: yes
+
+    - name: Set kubeconfig permissions on control node
+      file:
+        path: "{{ kubeconfig_dest }}"
+        mode: '0600'
+      delegate_to: localhost
+
+    # ========================================================================
+    # Verification
+    # ========================================================================
+    - name: Get K3s version
+      command: k3s --version
+      register: k3s_version_output
+      changed_when: false
+
+    - name: Get node status
+      command: k3s kubectl get nodes -o wide
+      register: k3s_node_status
+      changed_when: false
+
+    - name: Get pod status
+      command: k3s kubectl get pods -A
+      register: k3s_pods
+      changed_when: false
+
+  post_tasks:
+    - name: Display K3s installation summary
+      debug:
+        msg:
+          - "=========================================="
+          - "K3s Installation Complete!"
+          - "=========================================="
+          - ""
+          - "Version: {{ k3s_version_output.stdout_lines[0] }}"
+          - ""
+          - "Cluster Info:"
+          - "{{ k3s_node_status.stdout_lines }}"
+          - ""
+          - "System Pods:"
+          - "{{ k3s_pods.stdout_lines }}"
+          - ""
+          - "Kubeconfig saved to: {{ kubeconfig_dest }}"
+          - ""
+          - "Usage on control node (iac LXC):"
+          - "  export KUBECONFIG={{ kubeconfig_dest }}"
+          - "  kubectl get nodes"
+          - "  kubectl get pods -A"
+          - ""
+          - "Direct access on K3s LXC:"
+          - "  ssh root@{{ k3s_server_ip }}"
+          - "  k3s kubectl get nodes"
+          - ""
+          - "Next: Install Semaphore UI for Ansible management"

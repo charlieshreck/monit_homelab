@@ -1,0 +1,60 @@
+---
+# ============================================================================
+# Semaphore UI - Ansible Management Interface
+# ============================================================================
+# This Docker Compose file deploys Semaphore UI for visual Ansible management.
+#
+# Access: http://10.10.0.175:3000
+# Default login: chaz / H4ckwh1z
+#
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down
+# ============================================================================
+
+services:
+  semaphore:
+    image: semaphoreui/semaphore:v2.16.45
+    container_name: semaphore
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Database configuration (SQLite)
+      SEMAPHORE_DB_DIALECT: sqlite
+      SEMAPHORE_DB_PATH: /data/semaphore.db
+
+      # Admin user configuration
+      SEMAPHORE_ADMIN: chaz
+      SEMAPHORE_ADMIN_PASSWORD: H4ckwh1z
+      SEMAPHORE_ADMIN_NAME: "Charles Admin"
+      SEMAPHORE_ADMIN_EMAIL: chaz@homelab.local
+
+      # Access configuration
+      SEMAPHORE_ACCESS_KEY_ENCRYPTION: "gs72mPntFATGJs9qK0pQ0rKtfidlexiMjYCH9gWKhTU="
+      SEMAPHORE_WEB_ROOT: ""
+
+      # Playbook paths
+      SEMAPHORE_PLAYBOOK_PATH: /ansible
+
+      # Timezone
+      TZ: Pacific/Auckland
+
+    volumes:
+      # Persistent database
+      - ./data:/data
+
+      # Ansible repository (read-only access)
+      - /home/monit_homelab/ansible:/ansible:ro
+
+      # SSH keys for git operations (if needed)
+      - /root/.ssh:/root/.ssh:ro
+
+    networks:
+      - semaphore
+
+networks:
+  semaphore:
+    name: semaphore
+    driver: bridge
