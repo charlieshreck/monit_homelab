@@ -1,0 +1,84 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: monitoring
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: 33.2.1
+    helm:
+      valuesObject:
+        # Deployment configuration
+        deployment:
+          replicas: 1
+
+        # Service configuration - use NodePort for access on 10.30.0.20
+        service:
+          type: NodePort
+          spec:
+            externalTrafficPolicy: Local
+
+        # Ports configuration
+        ports:
+          web:
+            port: 8000
+            exposedPort: 80
+            nodePort: 30080
+            expose:
+              default: true
+          websecure:
+            port: 8443
+            exposedPort: 443
+            nodePort: 30443
+            expose:
+              default: true
+          traefik:
+            port: 9000
+            expose:
+              default: true
+
+        # IngressRoute for dashboard
+        ingressRoute:
+          dashboard:
+            enabled: true
+            matchRule: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+            entryPoints: ["web"]
+
+        # Resource limits
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
+
+        # Enable access logs
+        logs:
+          general:
+            level: INFO
+          access:
+            enabled: true
+
+        # Persistence for acme/certificates (not needed without cert-manager, but useful)
+        persistence:
+          enabled: true
+          size: 1Gi
+          storageClass: local-path
+
+  destination:
+    server: https://10.30.0.20:6443
+    namespace: traefik
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
