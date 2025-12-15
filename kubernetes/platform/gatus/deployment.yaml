@@ -17,32 +17,9 @@ data:
       header: "Monitoring Dashboard"
 
     endpoints:
-      # Production Cluster Services
-      - name: Production Talos API
-        url: "https://10.10.0.40:6443"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-        client:
-          insecure: true
-
-      - name: Production Traefik
-        url: "http://10.10.0.90:80"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 404"  # Traefik returns 404 on root, which is expected
-
-      # Monitoring Cluster
-      - name: Monitoring K3s
-        url: "https://10.30.0.20:6443"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-        client:
-          insecure: true
-
-      # Proxmox Hosts
-      - name: Proxmox Ruapehu
+      # Infrastructure
+      - name: Proxmox Ruapehu (Production)
+        group: Infrastructure
         url: "https://10.10.0.10:8006"
         interval: 120s
         conditions:
@@ -50,7 +27,8 @@ data:
         client:
           insecure: true
 
-      - name: Proxmox Carrick
+      - name: Proxmox Carrick (Monitoring)
+        group: Infrastructure
         url: "https://10.30.0.10:8006"
         interval: 120s
         conditions:
@@ -58,27 +36,207 @@ data:
         client:
           insecure: true
 
+      - name: Production Talos Cluster
+        group: Infrastructure
+        url: "https://10.10.0.40:6443"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+        client:
+          insecure: true
+
+      - name: Monitoring K3s Cluster
+        group: Infrastructure
+        url: "https://10.30.0.20:6443"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+        client:
+          insecure: true
+
+      - name: Production Traefik
+        group: Infrastructure
+        url: "http://10.10.0.90:80"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 404"
+
       # Monitoring Stack
-      - name: Prometheus
-        url: "http://kube-prometheus-stack-prometheus.monitoring:9090/-/healthy"
+      - name: Grafana
+        group: Monitoring
+        url: "https://grafana.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
-      - name: Grafana
-        url: "http://kube-prometheus-stack-grafana.monitoring:80/api/health"
+      - name: Prometheus
+        group: Monitoring
+        url: "https://prometheus.kernow.io/-/healthy"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Alertmanager
+        group: Monitoring
+        url: "https://alertmanager.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: VictoriaMetrics
-        url: "http://victoria-metrics.monitoring:8428/health"
+        group: Monitoring
+        url: "https://victoriametrics.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: VictoriaLogs
-        url: "http://victoria-logs.monitoring:9428/health"
+        group: Monitoring
+        url: "https://victorialogs.kernow.io/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Gatus (This)
+        group: Monitoring
+        url: "https://gatus.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Beszel
+        group: Monitoring
+        url: "https://beszel.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Core Applications
+      - name: Homepage
+        group: Apps
+        url: "https://homepage.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: ArgoCD
+        group: Apps
+        url: "https://argocd.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Vaultwarden
+        group: Apps
+        url: "https://vaultwarden.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: FileBrowser
+        group: Apps
+        url: "https://files.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Termix
+        group: Apps
+        url: "https://termix.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Home Automation
+      - name: Home Assistant
+        group: Home Automation
+        url: "https://homeassistant.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Matter Hub
+        group: Home Automation
+        url: "https://matter-hub.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: TasmoAdmin
+        group: Home Automation
+        url: "https://tasmoadmin.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Media Stack
+      - name: Overseerr
+        group: Media
+        url: "https://overseerr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Radarr
+        group: Media
+        url: "https://radarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Sonarr
+        group: Media
+        url: "https://sonarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Prowlarr
+        group: Media
+        url: "https://prowlarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: SABnzbd
+        group: Media
+        url: "https://sabnzbd.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Transmission
+        group: Media
+        url: "https://transmission.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Tautulli
+        group: Media
+        url: "https://tautulli.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Cleanuparr
+        group: Media
+        url: "https://cleanuparr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Notes Apps
+      - name: GlassKeep
+        group: Notes
+        url: "https://glasskeep.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: KaraKeep
+        group: Notes
+        url: "https://karakeep.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
