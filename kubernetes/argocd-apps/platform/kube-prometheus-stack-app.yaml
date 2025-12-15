@@ -33,6 +33,9 @@ spec:
               limits:
                 cpu: 2000m
                 memory: 4Gi
+            # Mount production cluster credentials
+            secrets:
+              - production-cluster-credentials
             # Enable remote write to VictoriaMetrics
             remoteWrite:
               - url: http://victoria-metrics:8428/api/v1/write
@@ -60,10 +63,60 @@ spec:
                 metrics_path: '/api2/prometheus'
                 params:
                   format: ['prometheus']
+
+              # Production Talos Cluster - Kubelet Metrics
+              - job_name: 'talos-kubelets'
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                  insecure_skip_verify: false
+                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                static_configs:
+                  - targets:
+                    - '10.10.0.40:10250'  # talos-cp-01
+                    - '10.10.0.41:10250'  # talos-worker-01
+                    - '10.10.0.42:10250'  # talos-worker-02
+                    - '10.10.0.43:10250'  # talos-worker-03
+                    labels:
+                      cluster: 'production'
+                metrics_path: '/metrics'
+
+              # Production Talos Cluster - cAdvisor Metrics
+              - job_name: 'talos-cadvisor'
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                  insecure_skip_verify: false
+                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                static_configs:
+                  - targets:
+                    - '10.10.0.40:10250'
+                    - '10.10.0.41:10250'
+                    - '10.10.0.42:10250'
+                    - '10.10.0.43:10250'
+                    labels:
+                      cluster: 'production'
+                metrics_path: '/metrics/cadvisor'
+
+              # Production Talos Cluster - API Server
+              - job_name: 'talos-apiserver'
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                  insecure_skip_verify: false
+                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                static_configs:
+                  - targets: ['10.10.0.40:6443']
+                    labels:
+                      cluster: 'production'
+                metrics_path: '/metrics'
+
               # K3s monitoring cluster
               - job_name: 'k3s-monitor'
                 static_configs:
                   - targets: ['10.30.0.20:10250']
+                    labels:
+                      cluster: 'monitoring'
 
         # Grafana configuration
         grafana:
