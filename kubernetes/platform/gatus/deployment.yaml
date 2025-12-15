@@ -61,52 +61,52 @@ data:
         conditions:
           - "[STATUS] == 404"
 
-      # Monitoring Stack
+      # Monitoring Stack (using internal service names)
       - name: Grafana
         group: Monitoring
-        url: "https://grafana.kernow.io"
+        url: "http://kube-prometheus-stack-grafana.monitoring:80/api/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Prometheus
         group: Monitoring
-        url: "https://prometheus.kernow.io/-/healthy"
+        url: "http://kube-prometheus-stack-prometheus.monitoring:9090/-/healthy"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Alertmanager
         group: Monitoring
-        url: "https://alertmanager.kernow.io"
+        url: "http://kube-prometheus-stack-alertmanager.monitoring:9093/-/healthy"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: VictoriaMetrics
         group: Monitoring
-        url: "https://victoriametrics.kernow.io/health"
+        url: "http://victoria-metrics-victoria-metrics-single-server.monitoring:8428/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: VictoriaLogs
         group: Monitoring
-        url: "https://victorialogs.kernow.io/health"
+        url: "http://victoria-logs-victoria-logs-single-server.monitoring:9428/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Gatus (This)
         group: Monitoring
-        url: "https://gatus.kernow.io"
+        url: "http://gatus.monitoring:8080"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Beszel
         group: Monitoring
-        url: "https://beszel.kernow.io"
+        url: "http://beszel.monitoring:8090"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
