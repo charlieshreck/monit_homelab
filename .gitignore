@@ -43,6 +43,11 @@
 **/ansible/vault-password.txt
 **/ansible/vault-*.txt
 **/*.vault
+**/*.retry
+
+# Semaphore
+**/semaphore/config.json
+**/semaphore/database.sqlite
 
 # General
 **/.DS_Store

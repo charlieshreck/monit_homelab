@@ -1,0 +1,62 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: victoria-metrics
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://victoriametrics.github.io/helm-charts
+    chart: victoria-metrics-single
+    targetRevision: 0.13.8
+    helm:
+      valuesObject:
+        server:
+          enabled: true
+          name: victoria-metrics
+          retentionPeriod: "12"  # 12 months retention
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          persistentVolume:
+            enabled: true
+            existingClaim: "victoria-metrics-storage"
+            mountPath: /storage
+            subPath: ""
+          extraArgs:
+            envflag.enable: "true"
+            envflag.prefix: VM_
+            loggerFormat: json
+          service:
+            servicePort: 8428
+            type: ClusterIP
+          ingress:
+            enabled: false
+          # Storage optimizations
+          storageDataPath: /storage
+
+        # Scrape configuration
+        vmselect:
+          enabled: false
+        vminsert:
+          enabled: false
+        vmstorage:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

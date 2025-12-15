@@ -1,0 +1,88 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: victoria-logs
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://victoriametrics.github.io/helm-charts
+    chart: victoria-logs-single
+    targetRevision: 0.11.0
+    helm:
+      valuesObject:
+        server:
+          enabled: true
+          name: victoria-logs
+          retentionPeriod: "6"  # 6 months retention
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          persistentVolume:
+            enabled: true
+            existingClaim: "victoria-logs-storage"
+            mountPath: /storage
+            subPath: ""
+          extraArgs:
+            envflag.enable: "true"
+            envflag.prefix: VL_
+            loggerFormat: json
+          service:
+            servicePort: 9428
+            type: ClusterIP
+          ingress:
+            enabled: false
+          storageDataPath: /storage
+
+        # Fluent Bit for log collection
+        fluent-bit:
+          enabled: true
+          config:
+            outputs: |
+              [OUTPUT]
+                  Name http
+                  Match *
+                  Host victoria-logs
+                  Port 9428
+                  URI /insert/jsonline?_stream_fields=stream,namespace,pod,container&_msg_field=log&_time_field=time
+                  Format json
+                  Json_date_key time
+                  Json_date_format iso8601
+            inputs: |
+              [INPUT]
+                  Name tail
+                  Path /var/log/containers/*.log
+                  multiline.parser docker, cri
+                  Tag kube.*
+                  Mem_Buf_Limit 50MB
+                  Skip_Long_Lines On
+            filters: |
+              [FILTER]
+                  Name kubernetes
+                  Match kube.*
+                  Kube_URL https://kubernetes.default.svc:443
+                  Kube_CA_File /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                  Kube_Token_File /var/run/secrets/kubernetes.io/serviceaccount/token
+                  Kube_Tag_Prefix kube.var.log.containers.
+                  Merge_Log On
+                  Keep_Log Off
+                  K8S-Logging.Parser On
+                  K8S-Logging.Exclude On
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

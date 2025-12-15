@@ -1,0 +1,163 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 69.3.1
+    helm:
+      valuesObject:
+        # Prometheus configuration
+        prometheus:
+          prometheusSpec:
+            retention: 30d
+            retentionSize: "45GB"
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 50Gi
+            resources:
+              requests:
+                cpu: 500m
+                memory: 2Gi
+              limits:
+                cpu: 2000m
+                memory: 4Gi
+            # Enable remote write to VictoriaMetrics
+            remoteWrite:
+              - url: http://victoria-metrics:8428/api/v1/write
+                queueConfig:
+                  capacity: 10000
+                  maxShards: 30
+                  minShards: 1
+                  maxSamplesPerSend: 5000
+                  batchSendDeadline: 5s
+                  minBackoff: 30ms
+                  maxBackoff: 100ms
+            # Scrape configs for monitoring targets
+            additionalScrapeConfigs:
+              # Proxmox Ruapehu (production)
+              - job_name: 'proxmox-ruapehu'
+                static_configs:
+                  - targets: ['10.10.0.10:8006']
+                metrics_path: '/api2/prometheus'
+                params:
+                  format: ['prometheus']
+              # Proxmox Carrick (monitoring)
+              - job_name: 'proxmox-carrick'
+                static_configs:
+                  - targets: ['10.30.0.10:8006']
+                metrics_path: '/api2/prometheus'
+                params:
+                  format: ['prometheus']
+              # K3s monitoring cluster
+              - job_name: 'k3s-monitor'
+                static_configs:
+                  - targets: ['10.30.0.20:10250']
+
+        # Grafana configuration
+        grafana:
+          enabled: true
+          adminPassword: H4ckwh1z
+          persistence:
+            enabled: true
+            size: 10Gi
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          datasources:
+            datasources.yaml:
+              apiVersion: 1
+              datasources:
+                - name: Prometheus
+                  type: prometheus
+                  url: http://kube-prometheus-stack-prometheus:9090
+                  isDefault: true
+                  access: proxy
+                - name: VictoriaMetrics
+                  type: prometheus
+                  url: http://victoria-metrics:8428
+                  access: proxy
+                - name: VictoriaLogs
+                  type: victorialogs-datasource
+                  url: http://victoria-logs:9428
+                  access: proxy
+          dashboardProviders:
+            dashboardproviders.yaml:
+              apiVersion: 1
+              providers:
+                - name: 'default'
+                  orgId: 1
+                  folder: ''
+                  type: file
+                  disableDeletion: false
+                  editable: true
+                  options:
+                    path: /var/lib/grafana/dashboards/default
+
+        # AlertManager configuration
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 10Gi
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+
+        # Node exporter
+        nodeExporter:
+          enabled: true
+
+        # Kube-state-metrics
+        kubeStateMetrics:
+          enabled: true
+
+        # Default rules
+        defaultRules:
+          create: true
+          rules:
+            alertmanager: true
+            etcd: false  # No etcd in K3s
+            kubeApiserver: true
+            kubeScheduler: true
+            kubeControllerManager: true
+            kubelet: true
+            kubeProxy: true
+            node: true
+            prometheus: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
