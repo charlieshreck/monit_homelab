@@ -24,9 +24,12 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - RespectIgnoreDifferences=true
   ignoreDifferences:
     - group: argoproj.io
       kind: Application
       jsonPointers:
         - /status
         - /operation
+        - /metadata/annotations
+        - /metadata/labels
