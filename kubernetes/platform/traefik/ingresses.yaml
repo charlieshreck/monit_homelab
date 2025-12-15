@@ -10,9 +10,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: grafana.monit.io
+      http:
         paths:
-          - path: /grafana
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -31,9 +32,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: prometheus.monit.io
+      http:
         paths:
-          - path: /prometheus
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -52,9 +54,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: alertmanager.monit.io
+      http:
         paths:
-          - path: /alertmanager
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -73,9 +76,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: victoriametrics.monit.io
+      http:
         paths:
-          - path: /victoriametrics
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -94,9 +98,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: victorialogs.monit.io
+      http:
         paths:
-          - path: /victorialogs
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -115,9 +120,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: gatus.monit.io
+      http:
         paths:
-          - path: /gatus
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -136,9 +142,10 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    - host: beszel.monit.io
+      http:
         paths:
-          - path: /beszel
+          - path: /
             pathType: Prefix
             backend:
               service:
