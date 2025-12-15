@@ -77,7 +77,7 @@ spec:
                   K8S-Logging.Exclude On
 
   destination:
-    server: https://kubernetes.default.svc
+    server: https://10.30.0.20:6443
     namespace: monitoring
 
   syncPolicy:

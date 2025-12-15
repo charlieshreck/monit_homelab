@@ -16,7 +16,7 @@ spec:
       recurse: true
       include: '*.yaml'
   destination:
-    server: https://10.30.0.20:6443
+    server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
     automated:
