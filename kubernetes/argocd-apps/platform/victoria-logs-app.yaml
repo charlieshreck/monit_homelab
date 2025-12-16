@@ -76,7 +76,7 @@ spec:
               vlogs:
                 type: elasticsearch
                 inputs: [parser]
-                endpoint: "http://victoria-logs-victoria-logs-single-server:9428/insert/elasticsearch"
+                endpoints: ["http://victoria-logs-victoria-logs-single-server:9428/insert/elasticsearch"]
                 mode: bulk
                 api_version: v8
                 compression: gzip
