@@ -38,7 +38,7 @@ spec:
               - production-cluster-credentials
             # Enable remote write to VictoriaMetrics
             remoteWrite:
-              - url: http://victoria-metrics:8428/api/v1/write
+              - url: http://victoria-metrics-victoria-metrics-single-server:8428/api/v1/write
                 queueConfig:
                   capacity: 10000
                   maxShards: 30
@@ -172,16 +172,29 @@ spec:
                 - name: Prometheus
                   type: prometheus
                   url: http://kube-prometheus-stack-prometheus:9090
-                  isDefault: false
+                  isDefault: true
                   access: proxy
+                  uid: prometheus
+                  jsonData:
+                    httpMethod: POST
+                    timeInterval: 30s
                 - name: VictoriaMetrics
                   type: prometheus
-                  url: http://victoria-metrics:8428
+                  url: http://victoria-metrics-victoria-metrics-single-server:8428
                   access: proxy
+                  uid: victoriametrics
+                  isDefault: false
+                  jsonData:
+                    httpMethod: POST
+                    timeInterval: 30s
                 - name: VictoriaLogs
-                  type: victorialogs-datasource
-                  url: http://victoria-logs:9428
+                  type: loki
+                  url: http://victoria-logs-victoria-logs-single-server:9428/select/logsql
                   access: proxy
+                  uid: victorialogs
+                  isDefault: false
+                  jsonData:
+                    maxLines: 1000
           dashboardProviders:
             dashboardproviders.yaml:
               apiVersion: 1
