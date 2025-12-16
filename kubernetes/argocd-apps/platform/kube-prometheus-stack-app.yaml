@@ -207,6 +207,44 @@ spec:
                   editable: true
                   options:
                     path: /var/lib/grafana/dashboards/default
+          dashboards:
+            default:
+              # Kubernetes Cluster Monitoring
+              kubernetes-cluster:
+                gnetId: 7249
+                revision: 1
+                datasource: Prometheus
+              kubernetes-views-global:
+                gnetId: 15757
+                revision: 37
+                datasource: Prometheus
+              kubernetes-views-namespaces:
+                gnetId: 15758
+                revision: 35
+                datasource: Prometheus
+              kubernetes-views-pods:
+                gnetId: 15759
+                revision: 28
+                datasource: Prometheus
+              # Node Exporter
+              node-exporter-full:
+                gnetId: 1860
+                revision: 37
+                datasource: Prometheus
+              # VictoriaMetrics
+              victoriametrics:
+                gnetId: 10229
+                revision: 2
+                datasource: VictoriaMetrics
+              victoriametrics-cluster:
+                gnetId: 11176
+                revision: 18
+                datasource: VictoriaMetrics
+              # Proxmox
+              proxmox:
+                gnetId: 10347
+                revision: 5
+                datasource: Prometheus
 
         # AlertManager configuration
         alertmanager:
