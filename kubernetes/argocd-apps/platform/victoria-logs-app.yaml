@@ -41,40 +41,47 @@ spec:
             enabled: false
           storageDataPath: /storage
 
-        # Fluent Bit for log collection
-        fluent-bit:
+        # Vector for log collection
+        vector:
           enabled: true
-          config:
-            outputs: |
-              [OUTPUT]
-                  Name http
-                  Match *
-                  Host victoria-logs
-                  Port 9428
-                  URI /insert/jsonline?_stream_fields=stream,namespace,pod,container&_msg_field=log&_time_field=time
-                  Format json
-                  Json_date_key time
-                  Json_date_format iso8601
-            inputs: |
-              [INPUT]
-                  Name tail
-                  Path /var/log/containers/*.log
-                  multiline.parser docker, cri
-                  Tag kube.*
-                  Mem_Buf_Limit 50MB
-                  Skip_Long_Lines On
-            filters: |
-              [FILTER]
-                  Name kubernetes
-                  Match kube.*
-                  Kube_URL https://kubernetes.default.svc:443
-                  Kube_CA_File /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-                  Kube_Token_File /var/run/secrets/kubernetes.io/serviceaccount/token
-                  Kube_Tag_Prefix kube.var.log.containers.
-                  Merge_Log On
-                  Keep_Log Off
-                  K8S-Logging.Parser On
-                  K8S-Logging.Exclude On
+          role: Agent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          customConfig:
+            data_dir: /vector-data-dir
+            api:
+              enabled: false
+            sources:
+              k8s:
+                type: kubernetes_logs
+              internal_metrics:
+                type: internal_metrics
+            transforms:
+              parser:
+                type: remap
+                inputs: [k8s]
+                source: |
+                  .log = parse_json(.message) ?? .message
+                  del(.message)
+            sinks:
+              exporter:
+                type: prometheus_exporter
+                address: 0.0.0.0:9090
+                inputs: [internal_metrics]
+              vlogs:
+                type: elasticsearch
+                inputs: [parser]
+                endpoint: "http://victoria-logs-victoria-logs-single-server:9428/insert/elasticsearch"
+                mode: bulk
+                api_version: v8
+                compression: gzip
+                healthcheck:
+                  enabled: false
 
   destination:
     server: https://10.30.0.20:6443
