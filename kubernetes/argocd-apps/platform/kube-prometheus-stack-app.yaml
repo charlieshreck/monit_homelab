@@ -151,21 +151,14 @@ spec:
                       cluster: 'monitoring'
                 metrics_path: '/metrics'
 
-              # Production Talos Cluster - kube-state-metrics (via API server proxy)
+              # Production Talos Cluster - kube-state-metrics (via NodePort)
               - job_name: 'talos-kube-state-metrics'
-                scheme: https
-                tls_config:
-                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
-                  insecure_skip_verify: false
-                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                scheme: http
                 static_configs:
-                  - targets: ['10.10.0.40:6443']
+                  - targets: ['10.10.0.40:30081']  # NodePort on any production node
                     labels:
                       cluster: 'production'
-                metrics_path: '/api/v1/namespaces/monitoring/services/kube-prometheus-stack-kube-state-metrics:8080/proxy/metrics'
-                relabel_configs:
-                  - target_label: job
-                    replacement: kube-state-metrics
+                      job: 'kube-state-metrics'
 
               # Production Talos Cluster - node-exporter (direct to node IPs)
               - job_name: 'talos-node-exporter'
