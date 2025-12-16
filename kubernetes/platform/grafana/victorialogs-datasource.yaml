@@ -11,13 +11,11 @@ data:
     apiVersion: 1
     datasources:
     - name: "VictoriaLogs"
-      type: prometheus
+      type: victoriametrics-logs-datasource
       uid: victorialogs
-      url: http://victoria-logs-victoria-logs-single-server.monitoring:9428/select/logsql
+      url: http://victoria-logs-victoria-logs-single-server.monitoring:9428
       access: proxy
       isDefault: false
       editable: true
       jsonData:
-        httpMethod: POST
-        timeInterval: 30s
-        customQueryParameters: "_stream_fields=cluster,namespace,pod,container,node"
+        maxLines: 1000
