@@ -41,7 +41,7 @@ data:
         url: "https://10.10.0.40:6443"
         interval: 60s
         conditions:
-          - "[STATUS] == 200"
+          - "[STATUS] == 401"
         client:
           insecure: true
 
@@ -50,7 +50,7 @@ data:
         url: "https://10.30.0.20:6443"
         interval: 60s
         conditions:
-          - "[STATUS] == 200"
+          - "[STATUS] == 401"
         client:
           insecure: true
 
