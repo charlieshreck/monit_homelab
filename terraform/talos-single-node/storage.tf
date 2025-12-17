@@ -230,10 +230,36 @@ resource "kubernetes_config_map" "local_path_config" {
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
+    labels = {
+      "pod-security.kubernetes.io/enforce" = "privileged"
+      "pod-security.kubernetes.io/audit"   = "privileged"
+      "pod-security.kubernetes.io/warn"    = "privileged"
+    }
   }
 
   depends_on = [
     data.talos_cluster_health.this,
+  ]
+}
+
+# ============================================================================
+# Production Cluster Credentials Secret
+# ============================================================================
+# Secret for Prometheus to scrape metrics from production cluster
+
+resource "kubernetes_secret" "production_cluster_credentials" {
+  metadata {
+    name      = "production-cluster-credentials"
+    namespace = "monitoring"
+  }
+
+  data = {
+    "ca.crt" = file("/home/prod_homelab/infrastructure/terraform/generated/ca.crt")
+    "token"  = file("/home/prod_homelab/infrastructure/terraform/generated/prometheus-token")
+  }
+
+  depends_on = [
+    kubernetes_namespace.monitoring,
   ]
 }
 
