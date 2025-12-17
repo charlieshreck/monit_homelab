@@ -187,7 +187,7 @@ resource "kubernetes_config_map" "local_path_config" {
       nodePathMap = [
         {
           node  = "DEFAULT_PATH_FOR_NON_LISTED_NODES"
-          paths = ["/var/lib/rancher/local-path-provisioner"]
+          paths = ["/var/mnt/monitoring-data/local-path-provisioner"]
         }
       ]
     })
@@ -221,4 +221,73 @@ resource "kubernetes_config_map" "local_path_config" {
           imagePullPolicy: IfNotPresent
     EOT
   }
+}
+
+# ============================================================================
+# Monitoring Namespace
+# ============================================================================
+
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+
+  depends_on = [
+    data.talos_cluster_health.this,
+  ]
+}
+
+# ============================================================================
+# PVCs for VictoriaMetrics and VictoriaLogs
+# ============================================================================
+# Pre-create PVCs for Victoria stack to use monitoring-storage ZFS pool
+
+resource "kubernetes_persistent_volume_claim" "victoria_metrics" {
+  metadata {
+    name      = "victoria-metrics-storage"
+    namespace = "monitoring"
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "200Gi"
+      }
+    }
+    storage_class_name = "local-path"
+  }
+
+  wait_until_bound = false
+
+  depends_on = [
+    kubernetes_namespace.monitoring,
+    kubernetes_storage_class.local_path,
+    kubernetes_deployment.local_path_provisioner,
+  ]
+}
+
+resource "kubernetes_persistent_volume_claim" "victoria_logs" {
+  metadata {
+    name      = "victoria-logs-storage"
+    namespace = "monitoring"
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "500Gi"
+      }
+    }
+    storage_class_name = "local-path"
+  }
+
+  wait_until_bound = false
+
+  depends_on = [
+    kubernetes_namespace.monitoring,
+    kubernetes_storage_class.local_path,
+    kubernetes_deployment.local_path_provisioner,
+  ]
 }

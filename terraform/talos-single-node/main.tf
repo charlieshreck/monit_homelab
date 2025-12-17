@@ -75,9 +75,18 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
     discard      = "on"
   }
 
-  # Talos ISO
+  # Data disk for monitoring storage (monitoring-storage ZFS pool - 1.13TB available)
+  disk {
+    datastore_id = "monitoring-storage"
+    interface    = "scsi1"
+    size         = 1000  # 1TB for Victoria metrics/logs data
+    file_format  = "raw"
+    ssd          = true
+    discard      = "on"
+  }
+
+  # Talos ISO (only used for initial boot, then removed)
   cdrom {
-    enabled   = true
     file_id   = proxmox_virtual_environment_download_file.talos_nocloud_image.id
     interface = "ide2"
   }
@@ -175,6 +184,12 @@ data "talos_machine_configuration" "monitoring_node" {
           }
         }
 
+        # Machine certificate SANs (for API server certificate)
+        certSANs = [
+          local.node_config.ip,
+          local.node_config.name
+        ]
+
         install = {
           image           = "ghcr.io/siderolabs/installer:${var.talos_version}"
           disk            = "/dev/sda"
@@ -182,6 +197,18 @@ data "talos_machine_configuration" "monitoring_node" {
           bootloader      = true
           extraKernelArgs = []
         }
+
+        # Mount second disk for monitoring data storage
+        disks = [
+          {
+            device = "/dev/sdb"
+            partitions = [
+              {
+                mountpoint = "/var/mnt/monitoring-data"
+              }
+            ]
+          }
+        ]
 
         # Enable KubePrism for reliable kube-apiserver access
         features = {
@@ -226,6 +253,30 @@ resource "talos_cluster_kubeconfig" "this" {
   ]
 }
 
+# Automatically approve pending CSRs
+resource "null_resource" "approve_csrs" {
+  provisioner "local-exec" {
+    command = <<-EOT
+      export KUBECONFIG=${path.module}/generated/kubeconfig
+      echo "Waiting for CSRs to appear..."
+      for i in {1..30}; do
+        pending=$(kubectl get csr --no-headers 2>/dev/null | grep Pending | wc -l || echo 0)
+        if [ "$pending" -gt 0 ]; then
+          echo "Approving $pending pending CSR(s)..."
+          kubectl certificate approve $(kubectl get csr --no-headers | grep Pending | awk '{print $1}')
+          echo "CSRs approved"
+          break
+        fi
+        sleep 5
+      done
+    EOT
+  }
+
+  depends_on = [
+    talos_cluster_kubeconfig.this,
+  ]
+}
+
 # Wait for cluster health
 data "talos_cluster_health" "this" {
   client_configuration = talos_machine_secrets.this.client_configuration
@@ -234,6 +285,6 @@ data "talos_cluster_health" "this" {
   endpoints            = [local.node_config.ip]
 
   depends_on = [
-    talos_machine_bootstrap.this,
+    null_resource.approve_csrs,
   ]
 }
