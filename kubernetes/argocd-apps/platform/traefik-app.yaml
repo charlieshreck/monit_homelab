@@ -66,11 +66,9 @@ spec:
           access:
             enabled: true
 
-        # Persistence for acme/certificates (not needed without cert-manager, but useful)
+        # Persistence for acme/certificates (disabled - no storage provisioner yet)
         persistence:
-          enabled: true
-          size: 1Gi
-          storageClass: local-path
+          enabled: false
 
   destination:
     server: https://10.30.0.20:6443
