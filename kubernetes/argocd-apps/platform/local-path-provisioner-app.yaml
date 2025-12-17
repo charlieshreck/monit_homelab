@@ -9,9 +9,9 @@ metadata:
 spec:
   project: monitoring
   source:
-    repoURL: https://github.com/rancher/local-path-provisioner
-    targetRevision: v0.0.28
-    path: deploy/chart/local-path-provisioner
+    repoURL: https://github.com/charlieshreck/monit_homelab.git
+    targetRevision: main
+    path: kubernetes/platform/local-path-provisioner
   destination:
     server: https://10.30.0.20:6443
     namespace: local-path-storage
