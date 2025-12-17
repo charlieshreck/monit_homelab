@@ -26,6 +26,12 @@ spec:
                   resources:
                     requests:
                       storage: 50Gi
+            # Fix storage permissions for local-path provisioner
+            securityContext:
+              runAsUser: 1000
+              runAsGroup: 2000
+              fsGroup: 2000
+              runAsNonRoot: true
             resources:
               requests:
                 cpu: 500m
@@ -177,9 +183,16 @@ spec:
         grafana:
           enabled: true
           adminPassword: H4ckwh1z
+          # Disable default datasource to avoid conflicts
+          defaultDatasourceEnabled: false
           persistence:
             enabled: true
             size: 10Gi
+          # Fix storage permissions
+          securityContext:
+            runAsUser: 472
+            runAsGroup: 472
+            fsGroup: 472
           resources:
             requests:
               cpu: 100m
