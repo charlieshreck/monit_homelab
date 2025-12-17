@@ -32,6 +32,17 @@ spec:
               runAsGroup: 2000
               fsGroup: 2000
               runAsNonRoot: true
+            # Init container to fix volume permissions
+            initContainers:
+              - name: init-chown-data
+                image: busybox:latest
+                command: ['sh', '-c', 'chown -R 1000:2000 /prometheus && chmod -R 775 /prometheus']
+                volumeMounts:
+                  - name: prometheus-kube-prometheus-stack-prometheus-db
+                    mountPath: /prometheus
+                securityContext:
+                  runAsUser: 0
+                  runAsNonRoot: false
             resources:
               requests:
                 cpu: 500m
