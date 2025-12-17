@@ -36,7 +36,8 @@ spec:
             loggerFormat: json
           service:
             servicePort: 9428
-            type: ClusterIP
+            type: NodePort
+            nodePort: 30085
           ingress:
             enabled: false
           storageDataPath: /storage
