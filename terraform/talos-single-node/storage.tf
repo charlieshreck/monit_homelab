@@ -353,7 +353,37 @@ resource "kubernetes_persistent_volume_claim" "coroot_clickhouse" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "200Gi"  # Increased allocation from Victoria Logs reduction
+        storage = "100Gi"  # Reduced: Only for eBPF traces/profiles/logs (metrics in Victoria Metrics)
+      }
+    }
+    storage_class_name = "local-path"
+  }
+
+  wait_until_bound = false
+
+  depends_on = [
+    kubernetes_namespace.coroot,
+    kubernetes_storage_class.local_path,
+    kubernetes_deployment.local_path_provisioner,
+  ]
+}
+
+# ============================================================================
+# PVC for Coroot Server State
+# ============================================================================
+# Server configuration and cache storage
+
+resource "kubernetes_persistent_volume_claim" "coroot_server_state" {
+  metadata {
+    name      = "coroot-server-storage"
+    namespace = "coroot"
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "10Gi"  # Server configuration and cache
       }
     }
     storage_class_name = "local-path"

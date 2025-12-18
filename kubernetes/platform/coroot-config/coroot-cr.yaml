@@ -1,0 +1,72 @@
+---
+# Coroot Custom Resource - Integrated with Victoria Metrics
+# External Prometheus eliminates duplicate metric storage
+# ClickHouse only for eBPF-specific data (traces, profiles, logs)
+apiVersion: coroot.com/v1
+kind: Coroot
+metadata:
+  name: coroot
+  namespace: coroot
+spec:
+  # CRITICAL: Use Victoria Metrics as external Prometheus data source
+  externalPrometheus:
+    url: "http://victoria-metrics-victoria-metrics-single-server.monitoring:8428"
+    tlsSkipVerify: false  # Internal service, no TLS needed
+    # No auth needed for in-cluster service access
+
+  # Disable built-in Prometheus (we use Victoria Metrics instead)
+  prometheus: null
+
+  # ClickHouse configuration - REDUCED storage (only eBPF data, not metrics)
+  clickhouse:
+    replicas: 1
+    shards: 1
+    keeper:
+      storage:
+        size: 10Gi  # Coordination data on Kerrier boot disk
+    shard:
+      storage:
+        size: 100Gi  # REDUCED: Only traces/profiles/eBPF logs
+        existingClaim: "coroot-clickhouse-shard-storage"
+
+  # Coroot server configuration
+  storage:
+    size: 10Gi
+    existingClaim: "coroot-server-storage"
+
+  # NodePort service (no LoadBalancer due to network isolation)
+  service:
+    type: NodePort
+    nodePort: 32702  # Consistent with previous setup
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Projects for multi-cluster monitoring
+  projects:
+    - name: prod-homelab
+      description: "Production Talos cluster (1 CP + 3 workers)"
+      apiKeys:
+        - description: "API key for production cluster agents"
+          keySecret:
+            name: prod-homelab-api-key
+            key: apikey
+
+    - name: monit-homelab
+      description: "Monitoring Talos cluster (single node)"
+      apiKeys:
+        - description: "API key for monitoring cluster agents"
+          keySecret:
+            name: monit-homelab-api-key
+            key: apikey
+
+    - name: all-clusters
+      description: "Aggregated view of both clusters"
+      memberProjects:
+        - prod-homelab
+        - monit-homelab
