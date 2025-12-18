@@ -65,7 +65,7 @@ spec:
           image: ghcr.io/coroot/coroot-cluster-agent:latest
           env:
             - name: COROOT_URL
-              value: "http://10.30.0.90:8080"
+              value: "http://10.30.0.20:32702"
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
@@ -104,7 +104,7 @@ spec:
           image: ghcr.io/coroot/coroot-node-agent:latest
           env:
             - name: COROOT_URL
-              value: "http://10.30.0.90:8080"
+              value: "http://10.30.0.20:32702"
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
