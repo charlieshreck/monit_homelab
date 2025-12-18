@@ -15,7 +15,7 @@ spec:
     directory:
       recurse: false
   destination:
-    server: https://10.10.0.40:6443  # Production cluster
+    server: https://kubernetes.default.svc  # Production cluster (in-cluster)
     namespace: coroot-agent
   syncPolicy:
     automated:
