@@ -70,7 +70,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: coroot-agent-apikey
-                  key: application_apikey
+                  key: monit_apikey
             - name: CLUSTER_NAME
               value: "prod-homelab"
           resources:
@@ -109,7 +109,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: coroot-agent-apikey
-                  key: application_apikey
+                  key: monit_apikey
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
