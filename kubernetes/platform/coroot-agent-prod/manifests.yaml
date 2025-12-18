@@ -73,6 +73,8 @@ spec:
                   key: application_apikey  # From Infisical
             - name: CLUSTER_NAME
               value: "production"
+            - name: KUBE_STATE_METRICS_ADDRESS
+              value: "127.0.0.1:10302"
           resources:
             requests:
               cpu: 100m
@@ -80,6 +82,23 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+        - name: kube-state-metrics
+          image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.10.1
+          args:
+            - --port=10302
+            - --telemetry-port=10304
+          ports:
+            - name: metrics
+              containerPort: 10302
+            - name: telemetry
+              containerPort: 10304
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
 
 ---
 # Node Agent DaemonSet (eBPF)
