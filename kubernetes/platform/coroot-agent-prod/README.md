@@ -29,6 +29,10 @@ Deploys Coroot agents (cluster-agent and node-agent) to the production cluster u
 ## Deployment
 
 Managed by ArgoCD application: `coroot-agent-prod`
-- Helm chart: `coroot/coroot-ce` (agents-only mode)
+- Manual Kubernetes manifests (cluster-agent Deployment + node-agent DaemonSet)
 - Secret: InfisicalSecret pulls API key from Infisical
 - Sync wave: 4 (after server and config)
+
+Note: Using manual manifests instead of Helm chart because the coroot-ce chart
+creates a Coroot CR even in agents-only mode, requiring the operator to be present.
+The operator is only on the monitoring cluster.

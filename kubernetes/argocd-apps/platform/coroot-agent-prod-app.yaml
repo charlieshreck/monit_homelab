@@ -8,43 +8,12 @@ metadata:
     argocd.argoproj.io/sync-wave: "4"
 spec:
   project: monitoring
-  sources:
-    # Source 1: Coroot agents Helm chart
-    - repoURL: https://coroot.github.io/helm-charts
-      chart: coroot-ce
-      targetRevision: "0.3.1"
-      helm:
-        valuesObject:
-          agentsOnly:
-            enabled: true
-            corootURL: "http://10.30.0.20:32702"
-          # API key will be provided by secret created in source 2
-          existingSecret: "coroot-agent-apikey"
-
-          # Reduce resource requests to prevent memory exhaustion
-          clusterAgent:
-            resources:
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
-
-          nodeAgent:
-            resources:
-              requests:
-                cpu: 100m
-                memory: 256Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
-
-    # Source 2: Pre-create secret with API key from monitoring cluster
-    - repoURL: https://github.com/charlieshreck/monit_homelab.git
-      targetRevision: main
-      path: kubernetes/platform/coroot-agent-prod
-
+  source:
+    repoURL: https://github.com/charlieshreck/monit_homelab.git
+    targetRevision: main
+    path: kubernetes/platform/coroot-agent-prod
+    directory:
+      recurse: false
   destination:
     server: https://kubernetes.default.svc  # Production cluster (in-cluster)
     namespace: coroot-agent
