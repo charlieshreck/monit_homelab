@@ -72,7 +72,7 @@ spec:
                   name: coroot-agent-apikey
                   key: application_apikey  # From Infisical
             - name: CLUSTER_NAME
-              value: "prod-homelab"
+              value: "production"
           resources:
             requests:
               cpu: 100m
