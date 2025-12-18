@@ -12,7 +12,7 @@ spec:
     # Source 1: Coroot CE Helm chart
     - repoURL: https://coroot.github.io/helm-charts
       chart: coroot-ce
-      targetRevision: ""  # Use latest available version
+      targetRevision: "0.3.1"
       helm:
         valuesObject:
           clickhouse:

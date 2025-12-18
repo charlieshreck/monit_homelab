@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  description: Monitoring infrastructure on dedicated Talos cluster
+
+  # Allow all source repositories
+  sourceRepos:
+    - https://github.com/charlieshreck/monit_homelab.git
+    - https://victoriametrics.github.io/helm-charts
+    - https://prometheus-community.github.io/helm-charts
+    - https://democratic-csi.github.io/charts/
+    - https://vmware-tanzu.github.io/helm-charts
+    - https://traefik.github.io/charts
+    - https://charts.gethomepage.dev
+    - https://coroot.github.io/helm-charts
+    - '*'
+
+  # Allowed deployment destinations
+  destinations:
+    # Monitoring cluster (all namespaces)
+    - server: https://10.30.0.20:6443
+      namespace: '*'
+
+    # Production cluster (in-cluster address)
+    # ArgoCD runs on production cluster, so this is the in-cluster address
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+
+    # Production cluster - coroot-agent namespace
+    - server: https://kubernetes.default.svc
+      namespace: coroot-agent
+
+  # Allow all cluster-scoped resources
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Allow all namespace-scoped resources
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
