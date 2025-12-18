@@ -11,11 +11,7 @@ spec:
   # CRITICAL: Use Victoria Metrics as external Prometheus data source
   externalPrometheus:
     url: "http://victoria-metrics-victoria-metrics-single-server.monitoring:8428"
-    tlsSkipVerify: false  # Internal service, no TLS needed
-    # No auth needed for in-cluster service access
-
-  # Disable built-in Prometheus (we use Victoria Metrics instead)
-  prometheus: null
+    tlsSkipVerify: false
 
   # ClickHouse configuration - REDUCED storage (only eBPF data, not metrics)
   clickhouse:
@@ -23,21 +19,18 @@ spec:
     shards: 1
     keeper:
       storage:
-        size: 10Gi  # Coordination data on Kerrier boot disk
-    shard:
-      storage:
-        size: 100Gi  # REDUCED: Only traces/profiles/eBPF logs
-        existingClaim: "coroot-clickhouse-shard-storage"
+        size: 10Gi  # Coordination data
+    storage:
+      size: 100Gi  # REDUCED: Only traces/profiles/eBPF logs
 
   # Coroot server configuration
   storage:
     size: 10Gi
-    existingClaim: "coroot-server-storage"
 
   # NodePort service (no LoadBalancer due to network isolation)
   service:
     type: NodePort
-    nodePort: 32702  # Consistent with previous setup
+    nodePort: 32702
 
   resources:
     requests:
@@ -50,23 +43,20 @@ spec:
   # Projects for multi-cluster monitoring
   projects:
     - name: prod-homelab
-      description: "Production Talos cluster (1 CP + 3 workers)"
       apiKeys:
-        - description: "API key for production cluster agents"
+        - description: "Production cluster agents"
           keySecret:
             name: prod-homelab-api-key
             key: apikey
 
     - name: monit-homelab
-      description: "Monitoring Talos cluster (single node)"
       apiKeys:
-        - description: "API key for monitoring cluster agents"
+        - description: "Monitoring cluster agents"
           keySecret:
             name: monit-homelab-api-key
             key: apikey
 
     - name: all-clusters
-      description: "Aggregated view of both clusters"
       memberProjects:
         - prod-homelab
         - monit-homelab
