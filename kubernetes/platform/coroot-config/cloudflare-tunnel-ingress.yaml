@@ -7,6 +7,12 @@ metadata:
   namespace: coroot
   annotations:
     argocd.argoproj.io/sync-wave: "4"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Coroot"
+    gethomepage.dev/description: "eBPF Observability Platform"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "mdi-chart-line"
+    gethomepage.dev/ping: "http://10.30.0.20:32702"
 spec:
   ingressClassName: cloudflare-tunnel
   rules:
