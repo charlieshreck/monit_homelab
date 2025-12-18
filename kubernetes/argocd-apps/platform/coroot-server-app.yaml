@@ -1,0 +1,58 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: coroot-server
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: monitoring
+  source:
+    repoURL: https://coroot.github.io/helm-charts
+    chart: coroot-ce
+    targetRevision: 0.14.3
+    helm:
+      valuesObject:
+        clickhouse:
+          replicas: 1
+          shards: 1
+          storage:
+            size: 100Gi
+        metricsRefreshInterval: 15s
+        prometheus:
+          storage:
+            size: 10Gi
+        storage:
+          size: 10Gi
+        # Configure projects for multi-cluster monitoring
+        projects:
+        - name: prod-homelab
+          apiKeys:
+          - description: "API key for production homelab cluster"
+            keySecret:
+              name: prod-homelab-api-key
+              key: apikey
+        - name: monit-homelab
+          apiKeys:
+          - description: "API key for monitoring homelab cluster"
+            keySecret:
+              name: monit-homelab-api-key
+              key: apikey
+        - name: all-clusters
+          memberProjects:
+          - prod-homelab
+          - monit-homelab
+        # Expose Coroot UI via LoadBalancer
+        coroot:
+          service:
+            type: LoadBalancer
+  destination:
+    server: https://10.30.0.20:6443
+    namespace: coroot
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

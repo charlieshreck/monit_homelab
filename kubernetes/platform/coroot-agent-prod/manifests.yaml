@@ -1,0 +1,233 @@
+---
+# Coroot Agent for Production Cluster (prod_homelab)
+# Deploys agents to monitor the prod_homelab cluster from Coroot server on monit_homelab
+#
+# Apply with:
+#   export KUBECONFIG=/home/prod_homelab/infrastructure/terraform/generated/kubeconfig
+#   kubectl apply -f coroot-agent-prod.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coroot-agent
+  labels:
+    name: coroot-agent
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coroot-cluster-agent
+  namespace: coroot-agent
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coroot-node-agent
+  namespace: coroot-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: coroot-cluster-agent
+rules:
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - nodes
+  - persistentvolumeclaims
+  - persistentvolumes
+  - pods
+  - services
+  - endpoints
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources:
+  - cronjobs
+  - jobs
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources:
+  - storageclasses
+  - volumeattachments
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: coroot-cluster-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: coroot-cluster-agent
+subjects:
+- kind: ServiceAccount
+  name: coroot-cluster-agent
+  namespace: coroot-agent
+---
+# API Key Secret - update this with the actual key from Coroot
+# Get key with: kubectl get secret prod-homelab-api-key -n coroot -o jsonpath='{.data.apikey}' | base64 -d
+apiVersion: v1
+kind: Secret
+metadata:
+  name: coroot-api-key
+  namespace: coroot-agent
+type: Opaque
+stringData:
+  apikey: "n0ify6v6Psi2dJKrqfoWlD484XkAO4uS"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coroot-cluster-agent
+  namespace: coroot-agent
+  labels:
+    app: coroot-cluster-agent
+    cluster: prod-homelab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coroot-cluster-agent
+  template:
+    metadata:
+      labels:
+        app: coroot-cluster-agent
+        cluster: prod-homelab
+    spec:
+      serviceAccountName: coroot-cluster-agent
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+        fsGroup: 65534
+      containers:
+      - name: cluster-agent
+        image: ghcr.io/coroot/coroot-cluster-agent:1.5.2
+        args:
+        - --listen=127.0.0.1:10301
+        - --metrics-wal-dir=/tmp
+        env:
+        - name: COROOT_URL
+          value: "http://10.30.0.90:8080"
+        - name: METRICS_SCRAPE_INTERVAL
+          value: "15s"
+        - name: KUBE_STATE_METRICS_ADDRESS
+          value: "127.0.0.1:10302"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: coroot-api-key
+              key: apikey
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      - name: kube-state-metrics
+        image: ghcr.io/coroot/kube-state-metrics:2.15.0-ubi9-0
+        args:
+        - --host=127.0.0.1
+        - --port=10302
+        - --resources=namespaces,nodes,daemonsets,deployments,cronjobs,jobs,persistentvolumeclaims,persistentvolumes,pods,replicasets,services,endpoints,statefulsets,storageclasses,volumeattachments
+        - --metric-labels-allowlist=pods=[*]
+        - --metric-annotations-allowlist=*=[coroot.com/application-category,coroot.com/custom-application-name]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: coroot-node-agent
+  namespace: coroot-agent
+  labels:
+    app: coroot-node-agent
+    cluster: prod-homelab
+spec:
+  selector:
+    matchLabels:
+      app: coroot-node-agent
+  template:
+    metadata:
+      labels:
+        app: coroot-node-agent
+        cluster: prod-homelab
+    spec:
+      serviceAccountName: coroot-node-agent
+      hostPID: true
+      tolerations:
+      - operator: Exists
+      containers:
+      - name: node-agent
+        image: ghcr.io/coroot/coroot-node-agent:1.27.0
+        args:
+        - --cgroupfs-root=/host/sys/fs/cgroup
+        env:
+        - name: SCRAPE_INTERVAL
+          value: "15s"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: coroot-api-key
+              key: apikey
+        - name: METRICS_ENDPOINT
+          value: "http://10.30.0.90:8080/v1/metrics"
+        - name: LOGS_ENDPOINT
+          value: "http://10.30.0.90:8080/v1/logs"
+        - name: TRACES_ENDPOINT
+          value: "http://10.30.0.90:8080/v1/traces"
+        - name: PROFILES_ENDPOINT
+          value: "http://10.30.0.90:8080/v1/profiles"
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cgroupfs
+          mountPath: /host/sys/fs/cgroup
+          readOnly: true
+        - name: tracefs
+          mountPath: /sys/kernel/tracing
+        - name: debugfs
+          mountPath: /sys/kernel/debug
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: cgroupfs
+        hostPath:
+          path: /sys/fs/cgroup
+      - name: tracefs
+        hostPath:
+          path: /sys/kernel/tracing
+      - name: debugfs
+        hostPath:
+          path: /sys/kernel/debug
+      - name: tmp
+        emptyDir: {}
