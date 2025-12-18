@@ -1,0 +1,22 @@
+---
+# External access via Cloudflare Tunnel
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: coroot-cloudflare-tunnel
+  namespace: coroot
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  ingressClassName: cloudflare-tunnel
+  rules:
+    - host: coroot.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: coroot-nodeport
+                port:
+                  number: 8080
