@@ -21,6 +21,25 @@ spec:
           # API key will be provided by secret created in source 2
           existingSecret: "coroot-agent-apikey"
 
+          # Reduce resource requests to prevent memory exhaustion
+          clusterAgent:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
+          nodeAgent:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
     # Source 2: Pre-create secret with API key from monitoring cluster
     - repoURL: https://github.com/charlieshreck/monit_homelab.git
       targetRevision: main
