@@ -5,15 +5,27 @@ metadata:
   name: coroot-agent-prod
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: monitoring
-  source:
-    repoURL: https://github.com/charlieshreck/monit_homelab.git
-    targetRevision: main
-    path: kubernetes/platform/coroot-agent-prod
-    directory:
-      recurse: false
+  sources:
+    # Source 1: Coroot agents Helm chart
+    - repoURL: https://coroot.github.io/helm-charts
+      chart: coroot-ce
+      targetRevision: "0.3.1"
+      helm:
+        valuesObject:
+          agentsOnly:
+            enabled: true
+            corootURL: "http://10.30.0.20:32702"
+          # API key will be provided by secret created in source 2
+          existingSecret: "coroot-agent-apikey"
+
+    # Source 2: Pre-create secret with API key from monitoring cluster
+    - repoURL: https://github.com/charlieshreck/monit_homelab.git
+      targetRevision: main
+      path: kubernetes/platform/coroot-agent-prod
+
   destination:
     server: https://kubernetes.default.svc  # Production cluster (in-cluster)
     namespace: coroot-agent
