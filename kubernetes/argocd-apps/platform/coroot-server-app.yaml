@@ -8,41 +8,35 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   project: monitoring
-  sources:
-    # Source 1: Coroot CE Helm chart
-    - repoURL: https://coroot.github.io/helm-charts
-      chart: coroot-ce
-      targetRevision: "0.3.1"
-      helm:
-        valuesObject:
-          clickhouse:
-            replicas: 1
-            shards: 1
-            keeper:
-              storage:
-                size: 10Gi  # Config data, stays on Kerrier boot disk
-            shard:
-              storage:
-                size: 200Gi  # Increased from 50Gi (reallocated from Victoria Logs)
-                existingClaim: "coroot-clickhouse-shard-storage"  # Uses monitoring-storage disk
-          prometheus:
+  source:
+    repoURL: https://coroot.github.io/helm-charts
+    chart: coroot-ce
+    targetRevision: "0.3.1"
+    helm:
+      valuesObject:
+        clickhouse:
+          replicas: 1
+          shards: 1
+          keeper:
             storage:
-              size: 10Gi  # Ephemeral scrape data, Kerrier is fine
-          service:
-            type: LoadBalancer
-            loadBalancerIP: "10.30.0.90"
-          resources:
-            requests:
-              cpu: 500m
-              memory: 1Gi
-            limits:
-              cpu: 2000m
-              memory: 4Gi
-
-    # Source 2: Platform manifests for Coroot CR with project config
-    - repoURL: https://github.com/charlieshreck/monit_homelab.git
-      targetRevision: main
-      path: kubernetes/platform/coroot-server
+              size: 10Gi  # Config data, stays on Kerrier boot disk
+          shard:
+            storage:
+              size: 200Gi  # Increased from 50Gi (reallocated from Victoria Logs)
+              existingClaim: "coroot-clickhouse-shard-storage"  # Uses monitoring-storage disk
+        prometheus:
+          storage:
+            size: 10Gi  # Ephemeral scrape data, Kerrier is fine
+        service:
+          type: LoadBalancer
+          loadBalancerIP: "10.30.0.90"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
 
   destination:
     server: https://10.30.0.20:6443
