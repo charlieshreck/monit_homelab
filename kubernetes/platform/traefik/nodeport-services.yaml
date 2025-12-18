@@ -64,22 +64,6 @@ spec:
       targetPort: 8428
       nodePort: 30084
 ---
-# VictoriaLogs NodePort Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: victorialogs-nodeport
-  namespace: monitoring
-spec:
-  type: NodePort
-  selector:
-    app: victoria-logs
-  ports:
-    - name: http
-      port: 9428
-      targetPort: 9428
-      nodePort: 30085
----
 # Gatus NodePort Service
 apiVersion: v1
 kind: Service
