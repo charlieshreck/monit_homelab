@@ -338,62 +338,11 @@ resource "kubernetes_namespace" "coroot" {
 }
 
 # ============================================================================
-# PVC for Coroot ClickHouse Shard
+# NOTE: Coroot Operator manages its own PVCs
 # ============================================================================
-# Uses monitoring-storage disk (scsi1, /var/mnt/monitoring-data)
-# Storage reallocated from Victoria Logs (reduced 500Gi→350Gi)
-
-resource "kubernetes_persistent_volume_claim" "coroot_clickhouse" {
-  metadata {
-    name      = "coroot-clickhouse-shard-storage"
-    namespace = "coroot"
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = "100Gi"  # Reduced: Only for eBPF traces/profiles/logs (metrics in Victoria Metrics)
-      }
-    }
-    storage_class_name = "local-path"
-  }
-
-  wait_until_bound = false
-
-  depends_on = [
-    kubernetes_namespace.coroot,
-    kubernetes_storage_class.local_path,
-    kubernetes_deployment.local_path_provisioner,
-  ]
-}
-
-# ============================================================================
-# PVC for Coroot Server State
-# ============================================================================
-# Server configuration and cache storage
-
-resource "kubernetes_persistent_volume_claim" "coroot_server_state" {
-  metadata {
-    name      = "coroot-server-storage"
-    namespace = "coroot"
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = "10Gi"  # Server configuration and cache
-      }
-    }
-    storage_class_name = "local-path"
-  }
-
-  wait_until_bound = false
-
-  depends_on = [
-    kubernetes_namespace.coroot,
-    kubernetes_storage_class.local_path,
-    kubernetes_deployment.local_path_provisioner,
-  ]
-}
+# The Coroot operator automatically creates PVCs for ClickHouse and server
+# storage. Pre-created PVCs are not used and remain in Pending state.
+# Operator-managed PVCs:
+# - data-coroot-clickhouse-shard-0-0 (100Gi) - eBPF traces/profiles/logs
+# - data-coroot-clickhouse-keeper-* (3x10Gi) - Keeper coordination data
+# - data-coroot-coroot-0 (10Gi) - Server configuration and cache
