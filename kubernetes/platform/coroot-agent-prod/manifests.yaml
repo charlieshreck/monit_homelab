@@ -104,6 +104,7 @@ spec:
           args:
             - --host=127.0.0.1
             - --port=10302
+            - --telemetry-host=127.0.0.1
             - --telemetry-port=10304
             - --resources=namespaces,nodes,daemonsets,deployments,cronjobs,jobs,persistentvolumeclaims,persistentvolumes,pods,replicasets,services,endpoints,statefulsets,storageclasses,volumeattachments
             - --metric-labels-allowlist=pods=[*]
