@@ -88,6 +88,8 @@ spec:
                   key: application_apikey  # From Infisical
             - name: CLUSTER_NAME
               value: "production"
+            - name: METRICS_SCRAPE_INTERVAL
+              value: "15s"
             - name: KUBE_STATE_METRICS_ADDRESS
               value: "127.0.0.1:10302"
           resources:
@@ -100,8 +102,11 @@ spec:
         - name: kube-state-metrics
           image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.10.1
           args:
+            - --host=127.0.0.1
             - --port=10302
             - --telemetry-port=10304
+            - --resources=namespaces,nodes,daemonsets,deployments,cronjobs,jobs,persistentvolumeclaims,persistentvolumes,pods,replicasets,services,endpoints,statefulsets,storageclasses,volumeattachments
+            - --metric-labels-allowlist=pods=[*]
           ports:
             - name: metrics
               containerPort: 10302
