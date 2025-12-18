@@ -303,7 +303,7 @@ resource "kubernetes_persistent_volume_claim" "victoria_logs" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "500Gi"
+        storage = "350Gi"  # Reduced from 500Gi to free space for Coroot
       }
     }
     storage_class_name = "local-path"
@@ -313,6 +313,56 @@ resource "kubernetes_persistent_volume_claim" "victoria_logs" {
 
   depends_on = [
     kubernetes_namespace.monitoring,
+    kubernetes_storage_class.local_path,
+    kubernetes_deployment.local_path_provisioner,
+  ]
+}
+
+# ============================================================================
+# Coroot Namespace
+# ============================================================================
+
+resource "kubernetes_namespace" "coroot" {
+  metadata {
+    name = "coroot"
+    labels = {
+      "pod-security.kubernetes.io/enforce" = "privileged"
+      "pod-security.kubernetes.io/audit"   = "privileged"
+      "pod-security.kubernetes.io/warn"    = "privileged"
+    }
+  }
+
+  depends_on = [
+    data.talos_cluster_health.this,
+  ]
+}
+
+# ============================================================================
+# PVC for Coroot ClickHouse Shard
+# ============================================================================
+# Uses monitoring-storage disk (scsi1, /var/mnt/monitoring-data)
+# Storage reallocated from Victoria Logs (reduced 500Gi→350Gi)
+
+resource "kubernetes_persistent_volume_claim" "coroot_clickhouse" {
+  metadata {
+    name      = "coroot-clickhouse-shard-storage"
+    namespace = "coroot"
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "200Gi"  # Increased allocation from Victoria Logs reduction
+      }
+    }
+    storage_class_name = "local-path"
+  }
+
+  wait_until_bound = false
+
+  depends_on = [
+    kubernetes_namespace.coroot,
     kubernetes_storage_class.local_path,
     kubernetes_deployment.local_path_provisioner,
   ]
