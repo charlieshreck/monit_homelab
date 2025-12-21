@@ -12,7 +12,7 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30082
+    nodePort: 31082
     protocol: TCP
     name: http
 ---
@@ -30,6 +30,6 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30083
+    nodePort: 31083
     protocol: TCP
     name: http

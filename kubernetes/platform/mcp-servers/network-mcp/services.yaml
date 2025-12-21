@@ -12,7 +12,7 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30087
+    nodePort: 31087
     protocol: TCP
     name: http
 ---
@@ -30,7 +30,7 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30088
+    nodePort: 31088
     protocol: TCP
     name: http
 ---
@@ -48,6 +48,6 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30089
+    nodePort: 31089
     protocol: TCP
     name: http
