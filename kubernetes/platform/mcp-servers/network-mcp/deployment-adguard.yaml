@@ -25,8 +25,7 @@ spec:
           - sh
           - -c
           - |
-            npm install -g @fcannizzaro/mcp-adguard-home
-            npx @fcannizzaro/mcp-adguard-home --http --port 8080
+            npx @fcannizzaro/mcp-adguard-home
         ports:
         - containerPort: 8080
           name: mcp-http

@@ -25,8 +25,7 @@ spec:
           - sh
           - -c
           - |
-            npm install -g @sirkirby/unifi-network-mcp
-            npx @sirkirby/unifi-network-mcp --http --port 8080
+            npx -y unifi-network-mcp
         ports:
         - containerPort: 8080
           name: mcp-http
