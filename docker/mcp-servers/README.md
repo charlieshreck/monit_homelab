@@ -1,58 +1,26 @@
 # MCP Server Docker Images
 
-Pre-built Docker images for MCP (Model Context Protocol) servers used in the homelab monitoring infrastructure.
+## ✅ Working Images
 
-## Images
+- **adguard-mcp**: `@fcannizzaro/mcp-adguard-home@1.0.4`
+- **opnsense-mcp**: `@richard-stovall/opnsense-mcp-server@0.5.3`
 
-All images are published to GitHub Container Registry (ghcr.io):
+## ❌ Non-Existent npm Packages
 
-- `ghcr.io/charlieshreck/proxmox-mcp` - Proxmox VE management
-- `ghcr.io/charlieshreck/opnsense-mcp` - OPNsense firewall management
-- `ghcr.io/charlieshreck/unifi-mcp` - UniFi Network management
-- `ghcr.io/charlieshreck/adguard-mcp` - AdGuard Home DNS management
+### Proxmox
+- `@puregrain/proxmox-emcp-node@0.4.7` - **NOT FOUND ON NPM**
+- Need alternative or build from GitHub source
 
-## Versioning
+### UniFi  
+- `unifi-network-mcp@1.0.0` - **NOT FOUND** (latest is 0.1.3)
+- Fixed to use `unifi-network-mcp@0.1.3`
 
-Images follow semantic versioning:
-- `latest` - Latest build from main branch
-- `v1.0.0` - Specific version tag
-- `v1.0` - Minor version tag
-- `v1` - Major version tag
-- `main-<sha>` - Git commit SHA
-
-## Automated Builds
-
-GitHub Actions automatically builds and publishes images on:
-- Push to main branch
-- Creation of version tags (v*)
-- Manual workflow dispatch
-
-## Renovate Integration
-
-Renovate Bot monitors npm package versions in Dockerfiles and creates PRs for updates automatically.
-
-## Security
-
-- Images run as non-root user (node)
-- Based on Alpine Linux (minimal attack surface)
-- Health checks included
-- Public images (no authentication required)
-
-## Local Testing
+## 📊 Monitor Builds
 
 ```bash
-# Build locally
-docker build -t proxmox-mcp:test ./proxmox/
+# Script saved to /tmp/monitor-builds.sh
+/tmp/monitor-builds.sh
 
-# Run locally
-docker run -p 8080:8080 \
-  -e PROXMOX_HOST=10.10.0.10 \
-  -e PROXMOX_USER=root@pam \
-  -e PROXMOX_TOKEN_ID=your-token-id \
-  -e PROXMOX_TOKEN_SECRET=your-secret \
-  proxmox-mcp:test
+# Web UI
+https://github.com/charlieshreck/monit_homelab/actions
 ```
-
-## Kubernetes Deployment
-
-Images are deployed via ArgoCD from `kubernetes/platform/mcp-servers/` manifests.

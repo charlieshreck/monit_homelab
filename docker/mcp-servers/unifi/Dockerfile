@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 
 # Install the MCP server package
-RUN npm install -g unifi-network-mcp@1.0.0
+RUN npm install -g unifi-network-mcp@0.1.3
 
 # Run as non-root user
 USER node
