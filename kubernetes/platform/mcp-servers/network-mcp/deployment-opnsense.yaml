@@ -35,17 +35,17 @@ spec:
         - name: OPNSENSE_HOST
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-opnsense
               key: OPNSENSE_HOST
         - name: OPNSENSE_API_KEY
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-opnsense
               key: OPNSENSE_API_KEY
         - name: OPNSENSE_API_SECRET
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-opnsense
               key: OPNSENSE_API_SECRET
         - name: MCP_PORT
           value: "8080"

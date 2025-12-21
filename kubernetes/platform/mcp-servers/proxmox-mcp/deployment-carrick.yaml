@@ -37,17 +37,17 @@ spec:
         - name: PROXMOX_USER
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-proxmox-carrick
               key: PROXMOX_USER
         - name: PROXMOX_TOKEN_ID
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-proxmox-carrick
               key: PROXMOX_TOKEN_ID
         - name: PROXMOX_TOKEN_SECRET
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-proxmox-carrick
               key: PROXMOX_TOKEN_SECRET
         - name: MCP_PORT
           value: "8080"

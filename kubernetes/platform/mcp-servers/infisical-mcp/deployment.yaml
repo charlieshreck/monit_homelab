@@ -34,12 +34,12 @@ spec:
         - name: INFISICAL_UNIVERSAL_AUTH_CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-infisical-credentials
               key: UNIVERSAL_AUTH_CLIENT_ID
         - name: INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-infisical-credentials
               key: UNIVERSAL_AUTH_CLIENT_SECRET
         - name: INFISICAL_HOST_URL
           value: "https://app.infisical.com"

@@ -35,17 +35,17 @@ spec:
         - name: UNIFI_HOST
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-unifi
               key: UNIFI_HOST
         - name: UNIFI_USERNAME
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-unifi
               key: UNIFI_USERNAME
         - name: UNIFI_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-unifi
               key: UNIFI_PASSWORD
         - name: UNIFI_SITE
           value: "default"

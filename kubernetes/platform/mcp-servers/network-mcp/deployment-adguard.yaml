@@ -35,17 +35,17 @@ spec:
         - name: ADGUARD_HOST
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-adguard
               key: ADGUARD_HOST
         - name: ADGUARD_USERNAME
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-adguard
               key: ADGUARD_USERNAME
         - name: ADGUARD_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mcp-credentials
+              name: mcp-adguard
               key: ADGUARD_PASSWORD
         - name: MCP_PORT
           value: "8080"
