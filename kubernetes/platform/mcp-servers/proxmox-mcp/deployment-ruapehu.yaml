@@ -35,20 +35,17 @@ spec:
         - name: PROXMOX_HOST
           value: "10.10.0.10"
         - name: PROXMOX_USER
+          value: "root@pam"
+        - name: PROXMOX_TOKEN_NAME
           valueFrom:
             secretKeyRef:
               name: mcp-proxmox-ruapehu
-              key: PROXMOX_USER
-        - name: PROXMOX_TOKEN_ID
+              key: TOKEN_ID
+        - name: PROXMOX_TOKEN_VALUE
           valueFrom:
             secretKeyRef:
               name: mcp-proxmox-ruapehu
-              key: PROXMOX_TOKEN_ID
-        - name: PROXMOX_TOKEN_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: mcp-proxmox-ruapehu
-              key: PROXMOX_TOKEN_SECRET
+              key: API_TOKEN
         - name: MCP_PORT
           value: "8080"
         resources:
