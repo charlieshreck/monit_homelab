@@ -33,20 +33,12 @@ spec:
           protocol: TCP
         env:
         - name: UNIFI_HOST
+          value: "https://10.10.0.154:443"
+        - name: UNIFI_API_KEY
           valueFrom:
             secretKeyRef:
               name: mcp-unifi
-              key: UNIFI_HOST
-        - name: UNIFI_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mcp-unifi
-              key: UNIFI_USERNAME
-        - name: UNIFI_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mcp-unifi
-              key: UNIFI_PASSWORD
+              key: UNIFI_API_KEY
         - name: UNIFI_SITE
           value: "default"
         - name: MCP_PORT

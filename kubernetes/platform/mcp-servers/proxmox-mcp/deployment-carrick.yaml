@@ -25,8 +25,7 @@ spec:
           - sh
           - -c
           - |
-            npm install -g @gilby125/mcp-proxmox
-            npx @gilby125/mcp-proxmox --http --port 8080
+            npx @puregrain/proxmox-emcp-node
         ports:
         - containerPort: 8080
           name: mcp-http
