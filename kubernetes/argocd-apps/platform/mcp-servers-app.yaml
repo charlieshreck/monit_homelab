@@ -14,7 +14,7 @@ spec:
     targetRevision: main
     path: kubernetes/platform/mcp-servers
   destination:
-    server: https://kubernetes.default.svc
+    server: https://10.30.0.20:6443
     namespace: mcp-servers
   syncPolicy:
     automated:
