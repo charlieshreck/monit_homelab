@@ -20,12 +20,8 @@ spec:
     spec:
       containers:
       - name: mcp-server
-        image: node:20-alpine
-        command:
-          - sh
-          - -c
-          - |
-            npx -y unifi-network-mcp
+        image: ghcr.io/charlieshreck/unifi-mcp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           name: mcp-http

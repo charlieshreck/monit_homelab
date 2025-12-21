@@ -20,12 +20,8 @@ spec:
     spec:
       containers:
       - name: mcp-server
-        image: node:20-alpine
-        command:
-          - sh
-          - -c
-          - |
-            npx @fcannizzaro/mcp-adguard-home
+        image: ghcr.io/charlieshreck/adguard-mcp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           name: mcp-http

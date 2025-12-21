@@ -20,12 +20,8 @@ spec:
     spec:
       containers:
       - name: mcp-server
-        image: node:20-alpine
-        command:
-          - sh
-          - -c
-          - |
-            npx @richard-stovall/opnsense-mcp-server
+        image: ghcr.io/charlieshreck/opnsense-mcp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           name: mcp-http
