@@ -27,7 +27,7 @@ spec:
           name: mcp-http
           protocol: TCP
         env:
-        - name: ADGUARD_HOST
+        - name: ADGUARD_URL
           value: "http://10.10.0.1:3000"
         - name: ADGUARD_USERNAME
           valueFrom:
