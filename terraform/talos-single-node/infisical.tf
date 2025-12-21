@@ -26,8 +26,8 @@ resource "kubernetes_secret" "infisical_universal_auth" {
   type = "Opaque"
 
   data = {
-    clientId     = "MGI4NWExYzctYTNiOS00Zjk3LThiMDgtYmFjZjc3MWRjMWM4"  # Base64: 0b85a1c7-a3b9-4f97-8b08-bacf771dc1c8
-    clientSecret = "NjgyNzU0NGY5OTMyOWRjNGRmOTk3NTMwNDJjOTM3MWExMThkMmJmMWE5NzI2ODY5MTY1OWRkZDA4MDhjYmQzYQ=="  # Base64: 6827544f99329dc4df99753042c9371a118d2bf1a97268691659ddd0808cbd3a
+    clientId     = "0b85a1c7-a3b9-4f97-8b08-bacf771dc1c8"
+    clientSecret = "6827544f99329dc4df99753042c9371a118d2bf1a97268691659ddd0808cbd3a"
   }
 }
 
