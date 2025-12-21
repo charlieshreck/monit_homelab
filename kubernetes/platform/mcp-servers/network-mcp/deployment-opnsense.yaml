@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opnsense-mcp
+  namespace: mcp-servers
+  labels:
+    app: opnsense-mcp
+    app.kubernetes.io/name: opnsense-mcp
+    app.kubernetes.io/component: network
+    network-type: firewall
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opnsense-mcp
+  template:
+    metadata:
+      labels:
+        app: opnsense-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: node:20-alpine
+        command:
+          - sh
+          - -c
+          - |
+            npm install -g @pixelworlds/opnsense-mcp-server
+            npx @pixelworlds/opnsense-mcp-server --http --port 8080
+        ports:
+        - containerPort: 8080
+          name: mcp-http
+          protocol: TCP
+        env:
+        - name: OPNSENSE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: OPNSENSE_HOST
+        - name: OPNSENSE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: OPNSENSE_API_KEY
+        - name: OPNSENSE_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: OPNSENSE_API_SECRET
+        - name: MCP_PORT
+          value: "8080"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5

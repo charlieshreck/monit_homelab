@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: talosconfig
+  namespace: mcp-servers
+  labels:
+    app.kubernetes.io/name: talos-mcp
+    cluster: production-talos
+data:
+  talosconfig: |
+    # IMPORTANT: Paste the contents of /home/prod_homelab/infrastructure/terraform/generated/talosconfig here
+    # This file is gitignored and must be manually created during deployment
+    # Run: kubectl create configmap talosconfig --from-file=talosconfig=/home/prod_homelab/infrastructure/terraform/generated/talosconfig -n mcp-servers

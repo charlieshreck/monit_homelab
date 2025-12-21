@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unifi-mcp
+  namespace: mcp-servers
+  labels:
+    app: unifi-mcp
+    app.kubernetes.io/name: unifi-mcp
+    app.kubernetes.io/component: network
+    network-type: wifi-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unifi-mcp
+  template:
+    metadata:
+      labels:
+        app: unifi-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: node:20-alpine
+        command:
+          - sh
+          - -c
+          - |
+            npm install -g @sirkirby/unifi-network-mcp
+            npx @sirkirby/unifi-network-mcp --http --port 8080
+        ports:
+        - containerPort: 8080
+          name: mcp-http
+          protocol: TCP
+        env:
+        - name: UNIFI_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: UNIFI_HOST
+        - name: UNIFI_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: UNIFI_USERNAME
+        - name: UNIFI_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: UNIFI_PASSWORD
+        - name: UNIFI_SITE
+          value: "default"
+        - name: MCP_PORT
+          value: "8080"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5

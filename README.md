@@ -2,9 +2,20 @@
 
 Infrastructure-as-Code for deploying a K3s monitoring cluster using **Terraform → Ansible → ArgoCD** pipeline.
 
+## ⚠️ CRITICAL: GitOps Workflow MANDATORY
+
+**READ THIS FIRST**: `/home/monit_homelab/GITOPS-WORKFLOW.md`
+
+**ALWAYS use GitOps workflow for ALL changes:**
+1. ✅ Commit to git FIRST
+2. ✅ Push to GitHub
+3. ✅ Deploy via Terraform/ArgoCD (automation)
+4. ❌ NEVER manual kubectl apply
+5. ❌ NEVER manual infrastructure changes
+
 ## Overview
 
-This repository deploys a lightweight K3s Kubernetes cluster in an LXC container for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, etc.). The monitoring cluster is isolated from production on a separate Proxmox host and network.
+This repository deploys a lightweight K3s Kubernetes cluster in an LXC container for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, Coroot, MCP servers, etc.). The monitoring cluster is isolated from production on a separate Proxmox host and network.
 
 ### Architecture
 

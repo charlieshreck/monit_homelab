@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard-mcp
+  namespace: mcp-servers
+  labels:
+    app: adguard-mcp
+    app.kubernetes.io/name: adguard-mcp
+    app.kubernetes.io/component: network
+    network-type: dns-filtering
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adguard-mcp
+  template:
+    metadata:
+      labels:
+        app: adguard-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: node:20-alpine
+        command:
+          - sh
+          - -c
+          - |
+            npm install -g @fcannizzaro/mcp-adguard-home
+            npx @fcannizzaro/mcp-adguard-home --http --port 8080
+        ports:
+        - containerPort: 8080
+          name: mcp-http
+          protocol: TCP
+        env:
+        - name: ADGUARD_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: ADGUARD_HOST
+        - name: ADGUARD_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: ADGUARD_USERNAME
+        - name: ADGUARD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: ADGUARD_PASSWORD
+        - name: MCP_PORT
+          value: "8080"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5

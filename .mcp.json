@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "infisical": {
+      "type": "http",
+      "url": "http://10.30.0.20:30080",
+      "description": "Query secrets from Infisical prod-homelab-y-nij project"
+    },
+    "coroot": {
+      "type": "http",
+      "url": "http://10.30.0.20:30081",
+      "description": "Observability queries for all monitored clusters"
+    },
+    "proxmox-ruapehu": {
+      "type": "http",
+      "url": "http://10.30.0.20:30082",
+      "description": "Manage production Proxmox host (10.10.0.10)"
+    },
+    "proxmox-carrick": {
+      "type": "http",
+      "url": "http://10.30.0.20:30083",
+      "description": "Manage monitoring Proxmox host (10.30.0.10)"
+    },
+    "kubernetes-prod": {
+      "type": "http",
+      "url": "http://10.30.0.20:30084",
+      "description": "Manage production Talos Kubernetes cluster"
+    },
+    "kubernetes-monitoring": {
+      "type": "http",
+      "url": "http://10.30.0.20:30085",
+      "description": "Manage monitoring K3s cluster (local)"
+    },
+    "talos": {
+      "type": "http",
+      "url": "http://10.30.0.20:30086",
+      "description": "Manage Talos OS nodes in production cluster"
+    },
+    "opnsense": {
+      "type": "http",
+      "url": "http://10.30.0.20:30087",
+      "description": "Manage OPNsense firewall"
+    },
+    "unifi": {
+      "type": "http",
+      "url": "http://10.30.0.20:30088",
+      "description": "Manage UniFi network devices and clients"
+    },
+    "adguard": {
+      "type": "http",
+      "url": "http://10.30.0.20:30089",
+      "description": "Manage AdGuard Home DNS filtering"
+    }
+  }
+}

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxmox-carrick-mcp
+  namespace: mcp-servers
+  labels:
+    app: proxmox-carrick-mcp
+    app.kubernetes.io/name: proxmox-carrick-mcp
+    app.kubernetes.io/component: infrastructure
+    proxmox-host: carrick
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxmox-carrick-mcp
+  template:
+    metadata:
+      labels:
+        app: proxmox-carrick-mcp
+    spec:
+      containers:
+      - name: mcp-server
+        image: node:20-alpine
+        command:
+          - sh
+          - -c
+          - |
+            npm install -g @gilby125/mcp-proxmox
+            npx @gilby125/mcp-proxmox --http --port 8080
+        ports:
+        - containerPort: 8080
+          name: mcp-http
+          protocol: TCP
+        env:
+        - name: PROXMOX_HOST
+          value: "10.30.0.10"
+        - name: PROXMOX_USER
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: PROXMOX_USER
+        - name: PROXMOX_TOKEN_ID
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: PROXMOX_TOKEN_ID
+        - name: PROXMOX_TOKEN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mcp-credentials
+              key: PROXMOX_TOKEN_SECRET
+        - name: MCP_PORT
+          value: "8080"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5

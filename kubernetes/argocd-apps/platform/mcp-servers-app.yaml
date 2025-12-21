@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mcp-servers
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  labels:
+    app.kubernetes.io/part-of: monitoring-infrastructure
+spec:
+  project: monitoring
+  source:
+    repoURL: https://github.com/charlieshreck/monit_homelab.git
+    targetRevision: main
+    path: kubernetes/platform/mcp-servers
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mcp-servers
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
