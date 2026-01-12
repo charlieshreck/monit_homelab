@@ -1,40 +1,54 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
-  "dockerfile": {
-    "enabled": true
-  },
-  "docker": {
-    "enabled": true,
-    "major": {
-      "enabled": false
-    }
-  },
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency Dashboard - Monitoring Cluster",
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
   "packageRules": [
     {
-      "matchDatasources": ["npm"],
-      "matchPaths": ["docker/mcp-servers/**/Dockerfile"],
-      "groupName": "MCP Server npm packages",
+      "description": "Auto-merge patch and minor updates",
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    },
+    {
+      "description": "Require review for major updates",
+      "matchUpdateTypes": ["major"],
       "automerge": false,
-      "labels": ["dependencies", "mcp-servers"]
+      "labels": ["major-update"]
     },
     {
-      "matchDatasources": ["docker"],
-      "matchPaths": ["kubernetes/platform/mcp-servers/**/*.yaml"],
-      "groupName": "MCP Server Docker images",
-      "automerge": true,
-      "labels": ["dependencies", "docker"]
+      "description": "Group monitoring platform updates",
+      "matchManagers": ["kubernetes"],
+      "matchPaths": ["kubernetes/platform/**"],
+      "groupName": "monitoring-platform"
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "matchPaths": ["docker/mcp-servers/**"],
-      "automerge": false
+      "description": "Group Terraform updates",
+      "matchManagers": ["terraform"],
+      "groupName": "terraform"
+    },
+    {
+      "description": "Group Ansible updates",
+      "matchManagers": ["ansible", "ansible-galaxy"],
+      "groupName": "ansible"
     }
   ],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
+  "schedule": [
+    "after 10pm every weekday",
+    "before 5am every weekday",
+    "every weekend"
+  ],
   "timezone": "UTC",
-  "labels": ["renovate"]
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore(deps):",
+  "rebaseWhen": "behind-base-branch",
+  "labels": ["dependencies", "renovate"],
+  "assignees": ["@charlieshreck"]
 }
