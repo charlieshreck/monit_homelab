@@ -8,6 +8,9 @@ metadata:
   name: coroot
   namespace: coroot
 spec:
+  # Enable anonymous read-only access for MCP API queries
+  authAnonymousRole: Viewer
+
   # CRITICAL: Use Victoria Metrics as external Prometheus data source
   externalPrometheus:
     url: "http://victoria-metrics-victoria-metrics-single-server.monitoring:8428"
