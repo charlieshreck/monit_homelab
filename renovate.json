@@ -9,9 +9,19 @@
   "automergeType": "pr",
   "automergeStrategy": "squash",
   "platformAutomerge": true,
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "prCreation": "not-pending",
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "kubernetes": {
+    "fileMatch": ["kubernetes/.+\\.ya?ml$"]
+  },
   "packageRules": [
     {
-      "description": "Auto-merge patch and minor updates",
+      "description": "Auto-merge patch and minor updates after stability period",
       "matchUpdateTypes": ["patch", "minor"],
       "automerge": true
     },
@@ -24,8 +34,14 @@
     {
       "description": "Group monitoring platform updates",
       "matchManagers": ["kubernetes"],
-      "matchPaths": ["kubernetes/platform/**"],
+      "matchFileNames": ["kubernetes/platform/**"],
       "groupName": "monitoring-platform"
+    },
+    {
+      "description": "Group monitoring application updates",
+      "matchManagers": ["kubernetes"],
+      "matchFileNames": ["kubernetes/applications/**"],
+      "groupName": "monitoring-apps"
     },
     {
       "description": "Group Terraform updates",
@@ -36,6 +52,11 @@
       "description": "Group Ansible updates",
       "matchManagers": ["ansible", "ansible-galaxy"],
       "groupName": "ansible"
+    },
+    {
+      "description": "Group Coroot components",
+      "matchPackagePatterns": ["^ghcr\\.io/coroot/"],
+      "groupName": "coroot-images"
     }
   ],
   "schedule": [
