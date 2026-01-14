@@ -1,0 +1,99 @@
+---
+# ============================================================================
+# Beszel Agent Deployment Playbook
+# ============================================================================
+# Deploys Beszel monitoring agents using the official installer script.
+#
+# Prerequisites:
+#   1. Add systems in Beszel Hub UI (http://10.30.0.20:30087)
+#   2. Copy the token for each system
+#
+# Usage:
+#   ansible-playbook -i inventory/beszel-agents.yml playbooks/03-beszel-agents.yml \
+#     -e "ruapehu_token=TOKEN1 carrick_token=TOKEN2 plex_token=TOKEN3"
+#
+# The hub public key is stored in Infisical at /monitoring/beszel/hub_public_key
+# ============================================================================
+
+- name: Deploy Beszel Agents
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    beszel_hub_url: "https://beszel.kernow.io"
+    beszel_hub_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINUFgMUc1TX77CLR+okMLEwrDp/G3y8s32a3IC9MzIpd"
+  tasks:
+    - name: Fail if beszel_token not provided
+      fail:
+        msg: |
+          ERROR: beszel_token not set for {{ inventory_hostname }}!
+
+          To get the token:
+          1. Go to {{ beszel_hub_url }}
+          2. Click "Add System" or view existing system
+          3. Copy the TOKEN shown (UUID format)
+          4. Run: ansible-playbook -i inventory/beszel-agents.yml playbooks/03-beszel-agents.yml \
+               -e "{{ inventory_hostname }}_token=YOUR_TOKEN"
+      when: beszel_token is not defined or beszel_token == ""
+
+    - name: Check if beszel-agent already running
+      systemd:
+        name: beszel-agent
+      register: beszel_service
+      failed_when: false
+
+    - name: Download Beszel installer
+      get_url:
+        url: https://get.beszel.dev
+        dest: /tmp/install-agent.sh
+        mode: '0755'
+      when: beszel_service.status is not defined or beszel_service.status.ActiveState != "active"
+
+    - name: Run Beszel installer
+      shell: |
+        /tmp/install-agent.sh -p {{ beszel_agent_port }} \
+          -k "{{ beszel_hub_key }}" \
+          -t "{{ beszel_token }}" \
+          -url "{{ beszel_hub_url }}"
+      args:
+        creates: /opt/beszel-agent/beszel-agent
+      when: beszel_service.status is not defined or beszel_service.status.ActiveState != "active"
+
+    - name: Ensure beszel-agent is enabled and running
+      systemd:
+        name: beszel-agent
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Verify agent is listening on port {{ beszel_agent_port }}
+      wait_for:
+        port: "{{ beszel_agent_port }}"
+        timeout: 30
+
+    - name: Display agent status
+      debug:
+        msg: "Beszel agent '{{ beszel_agent_name }}' is running on {{ ansible_host }}:{{ beszel_agent_port }}"
+
+
+- name: Summary
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display completion message
+      debug:
+        msg: |
+          ===============================================
+          Beszel Agents Deployed Successfully!
+          ===============================================
+
+          Agents are now reporting to:
+          {{ beszel_hub_url }}
+
+          Credentials stored in Infisical:
+          /monitoring/beszel/admin_email
+          /monitoring/beszel/admin_password
+          /monitoring/beszel/hub_public_key
+          ===============================================
+      vars:
+        beszel_hub_url: "https://beszel.kernow.io"

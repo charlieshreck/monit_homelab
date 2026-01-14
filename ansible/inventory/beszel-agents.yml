@@ -1,0 +1,92 @@
+---
+# ============================================================================
+# Ansible Inventory for Beszel Agents
+# ============================================================================
+# Usage:
+#   ansible-playbook -i inventory/beszel-agents.yml playbooks/03-beszel-agents.yml \
+#     -e "ruapehu_token=TOKEN1 carrick_token=TOKEN2 ..."
+#
+# Prerequisites:
+#   - SSH key authentication to all hosts
+#   - Systems added in Beszel Hub (https://beszel.kernow.io)
+#   - Tokens obtained from Beszel Hub UI
+#
+# Current Deployment Status (2026-01-14):
+#   All 8 systems deployed and reporting to Beszel Hub
+# ============================================================================
+
+all:
+  children:
+    proxmox_hosts:
+      hosts:
+        ruapehu:
+          ansible_host: 10.10.0.10
+          ansible_user: root
+          beszel_agent_name: "Proxmox Ruapehu"
+          beszel_token: "{{ ruapehu_token | default('') }}"
+
+        carrick:
+          ansible_host: 10.30.0.10
+          ansible_user: root
+          beszel_agent_name: "Proxmox Carrick"
+          beszel_token: "{{ carrick_token | default('') }}"
+
+    vms:
+      hosts:
+        plex:
+          ansible_host: 10.10.0.50
+          ansible_user: root
+          beszel_agent_name: "Plex VM"
+          beszel_token: "{{ plex_token | default('') }}"
+
+        unifi:
+          ansible_host: 10.10.0.51
+          ansible_user: root
+          beszel_agent_name: "UniFi Controller"
+          beszel_token: "{{ unifi_token | default('') }}"
+
+        pbs:
+          ansible_host: 10.10.0.150
+          ansible_user: root
+          beszel_agent_name: "Proxmox Backup Server"
+          beszel_token: "{{ pbs_token | default('') }}"
+
+    lxc:
+      hosts:
+        iac:
+          ansible_host: 10.10.0.175
+          ansible_user: root
+          beszel_agent_name: "IAC LXC"
+          beszel_token: "{{ iac_token | default('') }}"
+
+    truenas:
+      hosts:
+        truenas_media:
+          ansible_host: 10.20.0.100
+          ansible_user: root
+          beszel_agent_name: "TrueNAS Media"
+          beszel_token: "{{ truenas_media_token | default('') }}"
+          # Note: TrueNAS needs manual install to /root due to read-only /opt
+
+        truenas_hdd:
+          ansible_host: 10.20.0.103
+          ansible_user: root
+          beszel_agent_name: "TrueNAS HDD"
+          beszel_token: "{{ truenas_hdd_token | default('') }}"
+          # Note: TrueNAS needs manual install to /root due to read-only /opt
+
+  vars:
+    # Beszel Hub Configuration
+    beszel_hub_url: "https://beszel.kernow.io"
+    beszel_hub_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINUFgMUc1TX77CLR+okMLEwrDp/G3y8s32a3IC9MzIpd"
+    beszel_agent_port: 45876
+
+    # SSH settings
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+# ============================================================================
+# Systems NOT monitored by Beszel:
+# - Talos nodes (10.10.0.40-43, 10.20.0.40, 10.30.0.20): Immutable OS, use Coroot
+# - UnifiOS (104): Proprietary appliance
+# - k3sPlexia (103): Stopped
+# ============================================================================
