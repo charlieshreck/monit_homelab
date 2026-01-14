@@ -34,6 +34,10 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: coroot-agent
 
+    # Agentic cluster - coroot-agent namespace for cross-cluster monitoring
+    - server: https://10.20.0.40:6443
+      namespace: coroot-agent
+
   # Allow all cluster-scoped resources
   clusterResourceWhitelist:
     - group: '*'
