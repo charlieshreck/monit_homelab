@@ -69,8 +69,10 @@ spec:
       protocol: TCP
       port: 8090
       targetPort: 8090
+      nodePort: 30090
     - name: ssh
       protocol: TCP
       port: 45876
       targetPort: 45876
-  type: ClusterIP
+      nodePort: 30876
+  type: NodePort

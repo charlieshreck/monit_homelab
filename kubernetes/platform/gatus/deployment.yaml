@@ -61,6 +61,142 @@ data:
         conditions:
           - "[STATUS] == 404"
 
+      - name: Agentic Talos Cluster
+        group: Infrastructure
+        url: "https://10.20.0.40:6443"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 401"
+        client:
+          insecure: true
+
+      - name: Coroot
+        group: Monitoring
+        url: "http://10.30.0.20:32702"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # MCP Servers (Agentic Cluster)
+      - name: Infisical MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31080/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Coroot MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31081/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Proxmox MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31082/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Infrastructure MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31083/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Knowledge MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31084/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: OPNsense MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31085/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: AdGuard MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31086/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Cloudflare MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31087/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: UniFi MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31088/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: TrueNAS MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31089/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Home Assistant MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31090/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Arr Suite MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31091/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Homepage MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31092/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Web Search MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31093/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Browser Automation MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31094/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Plex MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31096/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Vikunja MCP
+        group: MCP Servers
+        url: "http://10.20.0.40:31097/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
       # Monitoring Stack (using internal service names)
       - name: Grafana
         group: Monitoring

@@ -65,7 +65,15 @@ spec:
             name: monit-homelab-api-key
             key: apikey
 
+    - name: agentic-homelab
+      apiKeys:
+        - description: "Agentic cluster agents"
+          keySecret:
+            name: agentic-homelab-api-key
+            key: apikey
+
     - name: all-clusters
       memberProjects:
         - prod-homelab
         - monit-homelab
+        - agentic-homelab

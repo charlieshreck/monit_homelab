@@ -1,0 +1,193 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coroot-agent
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: coroot-cluster-agent
+  namespace: coroot-agent
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: coroot-cluster-agent
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "nodes", "namespaces", "events", "persistentvolumes", "persistentvolumeclaims", "configmaps", "secrets", "resourcequotas", "replicationcontrollers", "limitranges"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "volumeattachments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: coroot-cluster-agent
+subjects:
+  - kind: ServiceAccount
+    name: coroot-cluster-agent
+    namespace: coroot-agent
+roleRef:
+  kind: ClusterRole
+  name: coroot-cluster-agent
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Cluster Agent Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coroot-cluster-agent
+  namespace: coroot-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coroot-cluster-agent
+  template:
+    metadata:
+      labels:
+        app: coroot-cluster-agent
+    spec:
+      serviceAccountName: coroot-cluster-agent
+      containers:
+        - name: cluster-agent
+          image: ghcr.io/coroot/coroot-cluster-agent:latest
+          env:
+            - name: COROOT_URL
+              value: "http://10.30.0.20:32702"
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coroot-agent-apikey
+                  key: agentic_apikey
+            - name: CLUSTER_NAME
+              value: "agentic"
+            - name: METRICS_SCRAPE_INTERVAL
+              value: "15s"
+            - name: KUBE_STATE_METRICS_ADDRESS
+              value: "127.0.0.1:10302"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        - name: kube-state-metrics
+          image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.10.1
+          args:
+            - --host=127.0.0.1
+            - --port=10302
+            - --resources=namespaces,nodes,daemonsets,deployments,cronjobs,jobs,persistentvolumeclaims,persistentvolumes,pods,replicasets,services,endpoints,statefulsets,storageclasses,volumeattachments
+            - --metric-labels-allowlist=pods=[*]
+          ports:
+            - name: metrics
+              containerPort: 10302
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+---
+# Node Agent DaemonSet (eBPF)
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: coroot-node-agent
+  namespace: coroot-agent
+spec:
+  selector:
+    matchLabels:
+      app: coroot-node-agent
+  template:
+    metadata:
+      labels:
+        app: coroot-node-agent
+    spec:
+      hostPID: true
+      hostNetwork: true
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: node-agent
+          image: ghcr.io/coroot/coroot-node-agent:latest
+          env:
+            - name: SCRAPE_INTERVAL
+              value: "15s"
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coroot-agent-apikey
+                  key: agentic_apikey
+            - name: METRICS_ENDPOINT
+              value: "http://10.30.0.20:32702/v1/metrics"
+            - name: LOGS_ENDPOINT
+              value: "http://10.30.0.20:32702/v1/logs"
+            - name: TRACES_ENDPOINT
+              value: "http://10.30.0.20:32702/v1/traces"
+            - name: PROFILES_ENDPOINT
+              value: "http://10.30.0.20:32702/v1/profiles"
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - SYS_RESOURCE
+                - SYS_PTRACE
+          volumeMounts:
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: proc
+              mountPath: /proc
+              readOnly: true
+            - name: kernel-debug
+              mountPath: /sys/kernel/debug
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: kernel-debug
+          hostPath:
+            path: /sys/kernel/debug
