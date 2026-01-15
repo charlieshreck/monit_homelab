@@ -16,6 +16,28 @@ data:
       title: "Homelab Status"
       header: "Monitoring Dashboard"
 
+    # Alert forwarding to Keep alert aggregation platform
+    alerting:
+      custom:
+        url: "http://10.20.0.40:31105/alerts/event/gatus"
+        method: "POST"
+        headers:
+          Content-Type: application/json
+        body: |
+          {
+            "alertname": "[ENDPOINT_NAME]",
+            "status": "[ALERT_TRIGGERED_OR_RESOLVED]",
+            "group": "[ENDPOINT_GROUP]",
+            "description": "[ENDPOINT_NAME] health check [ALERT_TRIGGERED_OR_RESOLVED]",
+            "source": "gatus",
+            "severity": "warning"
+          }
+        default-alert:
+          enabled: true
+          failure-threshold: 3
+          success-threshold: 2
+          send-on-resolved: true
+
     endpoints:
       # Infrastructure
       - name: Proxmox Ruapehu (Production)
