@@ -298,14 +298,6 @@ data:
         conditions:
           - "[STATUS] == 200"
 
-      - name: Matter Hub Fabric Status
-        group: Home Automation
-        url: "https://matter-hub.kernow.io/api/bridges"
-        interval: 300s
-        conditions:
-          - "[STATUS] == 200"
-          - '[BODY] != pattern(*"fabrics":[]*)']
-
       - name: TasmoAdmin
         group: Home Automation
         url: "https://tasmoadmin.kernow.io"
