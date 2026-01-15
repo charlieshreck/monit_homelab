@@ -305,6 +305,55 @@ spec:
         # AlertManager configuration
         alertmanager:
           enabled: true
+          # Configure alert routing to agentic cluster alerting-pipeline
+          config:
+            global:
+              resolve_timeout: 5m
+            route:
+              receiver: 'alerting-pipeline'
+              group_by: ['namespace', 'alertname']
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+              routes:
+                # Silence watchdog alerts
+                - match:
+                    alertname: 'Watchdog'
+                  receiver: 'null'
+                # Info alerts go to null
+                - match:
+                    alertname: 'InfoInhibitor'
+                  receiver: 'null'
+                # Critical alerts - immediate
+                - match:
+                    severity: critical
+                  receiver: 'alerting-pipeline'
+                  group_wait: 10s
+                  repeat_interval: 1h
+                # Warning alerts
+                - match:
+                    severity: warning
+                  receiver: 'alerting-pipeline'
+                  repeat_interval: 4h
+            receivers:
+              - name: 'null'
+              - name: 'alerting-pipeline'
+                webhook_configs:
+                  - url: 'http://10.20.0.40:31095/alert'
+                    send_resolved: true
+                    http_config:
+                      follow_redirects: true
+            inhibit_rules:
+              - source_matchers:
+                  - severity = critical
+                target_matchers:
+                  - severity =~ warning|info
+                equal: ['namespace', 'alertname']
+              - source_matchers:
+                  - severity = warning
+                target_matchers:
+                  - severity = info
+                equal: ['namespace', 'alertname']
           alertmanagerSpec:
             storage:
               volumeClaimTemplate:
