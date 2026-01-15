@@ -178,6 +178,28 @@ spec:
                       cluster: 'monitoring'
                 metrics_path: '/metrics'
 
+              # Agentic Cluster - AI Platform Services
+              # Forever Learning System metrics (Phase 4)
+              - job_name: 'ai-platform-claude-agent'
+                scheme: http
+                static_configs:
+                  - targets: ['10.20.0.40:30200']  # claude-agent NodePort
+                    labels:
+                      cluster: 'agentic'
+                      service: 'claude-agent'
+                metrics_path: '/metrics'
+                scrape_interval: 30s
+
+              - job_name: 'ai-platform-claude-validator'
+                scheme: http
+                static_configs:
+                  - targets: ['10.20.0.40:30201']  # claude-validator NodePort
+                    labels:
+                      cluster: 'agentic'
+                      service: 'claude-validator'
+                metrics_path: '/metrics'
+                scrape_interval: 30s
+
               # Production Talos Cluster - kube-state-metrics (via NodePort)
               - job_name: 'talos-kube-state-metrics'
                 scheme: http
