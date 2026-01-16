@@ -19,17 +19,21 @@ data:
     # Alert forwarding to Keep alert aggregation platform
     alerting:
       custom:
-        url: "http://10.20.0.40:31105/alerts/event/gatus"
+        url: "http://10.20.0.40:31105/alerts/event"
         method: "POST"
         headers:
           Content-Type: application/json
+          X-API-KEY: 2590dbe6-64f6-4c0a-be76-4d0ccefb79a4
         body: |
           {
-            "alertname": "[ENDPOINT_NAME]",
+            "name": "[ENDPOINT_NAME]",
             "status": "[ALERT_TRIGGERED_OR_RESOLVED]",
-            "group": "[ENDPOINT_GROUP]",
+            "source": ["gatus"],
+            "labels": {
+              "group": "[ENDPOINT_GROUP]",
+              "endpoint": "[ENDPOINT_NAME]"
+            },
             "description": "[ENDPOINT_NAME] health check [ALERT_TRIGGERED_OR_RESOLVED]",
-            "source": "gatus",
             "severity": "warning"
           }
         default-alert:
