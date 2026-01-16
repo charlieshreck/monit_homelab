@@ -83,7 +83,7 @@ spec:
       notificationIntegrations:
         baseURL: "http://10.30.0.20:32702"
         webhook:
-          url: "http://10.20.0.40:31105/alerts/event/coroot"
+          url: "http://10.20.0.40:31105/alerts/event/keep"
           customHeaders:
             - key: X-API-KEY
               value: "2590dbe6-64f6-4c0a-be76-4d0ccefb79a4"
