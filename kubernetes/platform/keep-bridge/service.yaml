@@ -1,0 +1,29 @@
+---
+# Bridge service to route alerts from monit cluster to Keep in agentic cluster
+# Used by Beszel and other monitoring tools that need to send alerts to Keep
+apiVersion: v1
+kind: Service
+metadata:
+  name: keep
+  namespace: monitoring
+  labels:
+    app: keep-bridge
+spec:
+  ports:
+    - port: 8080
+      targetPort: 31105
+      name: http
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: keep
+  namespace: monitoring
+  labels:
+    app: keep-bridge
+subsets:
+  - addresses:
+      - ip: 10.20.0.40
+    ports:
+      - port: 31105
+        name: http
