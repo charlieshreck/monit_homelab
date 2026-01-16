@@ -80,3 +80,38 @@ spec:
         - prod-homelab
         - monit-homelab
         - agentic-homelab
+      notificationIntegrations:
+        baseURL: "http://10.30.0.20:32702"
+        webhook:
+          url: "http://10.20.0.40:31105/alerts/event/coroot"
+          customHeaders:
+            - key: X-API-KEY
+              value: "2590dbe6-64f6-4c0a-be76-4d0ccefb79a4"
+          incidents: true
+          deployments: true
+          incidentTemplate: |
+            {
+              "name": "{{ .Application.Name }}@{{ .Application.Namespace }}",
+              "status": "{{ if eq .Status "OK" }}resolved{{ else }}triggered{{ end }}",
+              "source": ["coroot"],
+              "severity": "{{ if eq .Status "CRITICAL" }}critical{{ else if eq .Status "WARNING" }}warning{{ else }}info{{ end }}",
+              "description": "{{ range .Reports }}{{ .Check }}: {{ .Message }} {{ end }}",
+              "labels": {
+                "namespace": "{{ .Application.Namespace }}",
+                "application": "{{ .Application.Name }}",
+                "kind": "{{ .Application.Kind }}"
+              },
+              "url": "{{ .URL }}"
+            }
+          deploymentTemplate: |
+            {
+              "name": "deployment-{{ .Application.Name }}",
+              "status": "{{ if eq .Status "Deployed" }}resolved{{ else }}triggered{{ end }}",
+              "source": ["coroot"],
+              "severity": "info",
+              "description": "Deployment {{ .Version }}: {{ .Status }}",
+              "labels": {
+                "namespace": "{{ .Application.Namespace }}",
+                "application": "{{ .Application.Name }}"
+              }
+            }
