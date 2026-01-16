@@ -363,10 +363,13 @@ spec:
                 webhook_configs:
                   # Keep - central alert aggregation hub
                   # Keep forwards to LangGraph after dedup/consolidation
-                  - url: 'http://10.20.0.40:31105/alerts/event/alertmanager'
+                  - url: 'http://10.20.0.40:31105/alerts/event/prometheus'
                     send_resolved: true
                     http_config:
                       follow_redirects: true
+                      basic_auth:
+                        username: api_key
+                        password: c2056883-65b1-4b78-9b97-c5f468601055
             inhibit_rules:
               - source_matchers:
                   - severity = critical
