@@ -89,19 +89,7 @@ spec:
                 metrics_path: '/api2/prometheus'
                 params:
                   format: ['prometheus']
-              # Proxmox Carrick (monitoring)
-              - job_name: 'proxmox-carrick'
-                scheme: https
-                tls_config:
-                  insecure_skip_verify: true
-                basic_auth:
-                  username: root@pam
-                  password: H4ckwh1z
-                static_configs:
-                  - targets: ['10.30.0.10:8006']
-                metrics_path: '/api2/prometheus'
-                params:
-                  format: ['prometheus']
+              # NOTE: proxmox-carrick REMOVED - host decommissioned
 
               # Production Talos Cluster - Kubelet Metrics (via API server proxy)
               - job_name: 'talos-kubelets'
@@ -405,19 +393,32 @@ spec:
         kubeStateMetrics:
           enabled: true
 
+        # DISABLED: Talos control plane not exposed as pods
+        # These ServiceMonitors cause TargetDown alerts
+        kubeScheduler:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        kubeProxy:
+          enabled: false
+
         # Default rules
+        # NOTE: Disabled Talos-incompatible rules (control plane not exposed as pods)
         defaultRules:
           create: true
           rules:
             alertmanager: true
-            etcd: false  # No etcd in K3s
+            etcd: false           # No etcd in K3s
             kubeApiserver: true
-            kubeScheduler: true
-            kubeControllerManager: true
+            kubeScheduler: false  # DISABLED: Talos control plane not exposed
+            kubeControllerManager: false  # DISABLED: Talos control plane not exposed
             kubelet: true
-            kubeProxy: true
+            kubeProxy: false      # DISABLED: Talos uses Cilium, not kube-proxy
+            kubePrometheusNodeRecording: true
             node: true
             prometheus: true
+            general: true
+            k8s: true
 
   destination:
     server: https://10.30.0.20:6443
