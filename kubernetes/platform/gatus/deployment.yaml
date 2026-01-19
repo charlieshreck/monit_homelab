@@ -402,6 +402,13 @@ data:
         interval: 60s
         conditions:
           - "[STATUS] == 200"
+
+      - name: Outline
+        group: Notes
+        url: "https://outline.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
