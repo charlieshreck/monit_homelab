@@ -60,6 +60,13 @@ data:
         conditions:
           - "[STATUS] == 200"
 
+      - name: Backrest
+        group: Storage
+        url: "http://10.20.0.40:31115"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
       # Infrastructure
       - name: Proxmox Ruapehu (Production)
         group: Infrastructure
