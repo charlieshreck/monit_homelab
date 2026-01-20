@@ -43,6 +43,23 @@ data:
           send-on-resolved: true
 
     endpoints:
+      # Storage
+      - name: Garage S3 API
+        group: Storage
+        url: "http://10.20.0.103:30188"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 403"  # Anonymous requests return 403
+        client:
+          insecure: true
+
+      - name: Garage Web UI
+        group: Storage
+        url: "http://10.20.0.103:30186"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
       # Infrastructure
       - name: Proxmox Ruapehu (Production)
         group: Infrastructure
