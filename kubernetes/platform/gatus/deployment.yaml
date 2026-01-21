@@ -247,6 +247,35 @@ data:
         conditions:
           - "[STATUS] == 200"
 
+      # AI Platform (Local Inference)
+      - name: Ollama (qwen2.5:7b)
+        group: AI Platform
+        url: "http://10.20.0.40:31434/"
+        interval: 30s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: LiteLLM Proxy
+        group: AI Platform
+        url: "http://10.20.0.40:31400/health"
+        interval: 30s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: LangGraph Orchestrator
+        group: AI Platform
+        url: "http://10.20.0.40:31095/health"
+        interval: 30s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Matrix Bot
+        group: AI Platform
+        url: "http://10.20.0.40:31102/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
       # Monitoring Stack (using internal service names)
       - name: Grafana
         group: Monitoring
