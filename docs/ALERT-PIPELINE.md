@@ -83,7 +83,7 @@ notificationIntegrations:
     url: "http://10.20.0.40:31105/alerts/event/coroot"
     customHeaders:
       - key: X-API-KEY
-        value: "2590dbe6-64f6-4c0a-be76-4d0ccefb79a4"
+        value: "16b7de2a-5d6d-4021-a774-53a083edc28e"
     incidents: true
     deployments: true
     incidentTemplate: |
@@ -144,7 +144,7 @@ subsets:
 #### Shoutrrr URL
 
 ```
-generic://X-API-KEY:2590dbe6-64f6-4c0a-be76-4d0ccefb79a4@keep.monitoring:8080/alerts/event/webhook?disabletls=yes&template=json&titlekey=name&messagekey=description&$severity=warning&$source=beszel
+generic://X-API-KEY:16b7de2a-5d6d-4021-a774-53a083edc28e@keep.monitoring:8080/alerts/event/webhook?disabletls=yes&template=json&titlekey=name&messagekey=description&$severity=warning&$source=beszel
 ```
 
 **URL Breakdown**:
@@ -173,7 +173,7 @@ alerting:
     url: "http://10.20.0.40:31105/alerts/event/gatus"
     headers:
       Content-Type: application/json
-      X-API-KEY: "2590dbe6-64f6-4c0a-be76-4d0ccefb79a4"
+      X-API-KEY: "16b7de2a-5d6d-4021-a774-53a083edc28e"
 ```
 
 **Status**: Not yet configured
@@ -235,7 +235,7 @@ keep_list_alerts(limit=20)
 ```bash
 curl -X POST http://10.20.0.40:31105/alerts/event/webhook \
   -H "Content-Type: application/json" \
-  -H "X-API-KEY: 2590dbe6-64f6-4c0a-be76-4d0ccefb79a4" \
+  -H "X-API-KEY: 16b7de2a-5d6d-4021-a774-53a083edc28e" \
   -d '{
     "name": "Test Alert",
     "severity": "warning",

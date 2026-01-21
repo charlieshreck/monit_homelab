@@ -357,7 +357,7 @@ spec:
                       follow_redirects: true
                       basic_auth:
                         username: api_key
-                        password: c2056883-65b1-4b78-9b97-c5f468601055
+                        password: 16b7de2a-5d6d-4021-a774-53a083edc28e
             inhibit_rules:
               - source_matchers:
                   - severity = critical

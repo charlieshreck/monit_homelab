@@ -86,7 +86,7 @@ spec:
           url: "http://10.20.0.40:31105/alerts/event/keep"
           customHeaders:
             - key: X-API-KEY
-              value: "2590dbe6-64f6-4c0a-be76-4d0ccefb79a4"
+              value: "16b7de2a-5d6d-4021-a774-53a083edc28e"
           incidents: true
           deployments: true
           incidentTemplate: |
