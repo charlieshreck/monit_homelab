@@ -25,7 +25,7 @@ spec:
           annotations:
             summary: "AI Learning System has not logged events in 24+ hours"
             description: "No new events have been logged to the knowledge base in over 24 hours. The learning system may be stale or broken."
-            runbook_url: "https://docs.kernow.io/runbooks/learning-system-stale"
+            runbook_url: "https://fumadocs.kernow.io/runbooks"
 
         # NOTE: LowFeedbackScore alert REMOVED - claude-validator service decommissioned.
         # Re-add when validator metrics are available from a new service.
@@ -44,7 +44,7 @@ spec:
           annotations:
             summary: "High rate of AI task failures"
             description: "{{ $value | humanizePercentage }} of tasks are failing in the last hour. Check claude-agent logs for errors."
-            runbook_url: "https://docs.kernow.io/runbooks/high-task-failure-rate"
+            runbook_url: "https://fumadocs.kernow.io/runbooks"
 
         # Alert if queue is backing up
         - alert: TaskQueueBacklog
@@ -57,7 +57,7 @@ spec:
           annotations:
             summary: "AI task queue has significant backlog"
             description: "{{ $value }} tasks waiting in queue. Workers may be overwhelmed or stuck."
-            runbook_url: "https://docs.kernow.io/runbooks/task-queue-backlog"
+            runbook_url: "https://fumadocs.kernow.io/runbooks"
 
         # Alert if no active workers
         - alert: NoActiveWorkers
@@ -70,7 +70,7 @@ spec:
           annotations:
             summary: "No active AI workers"
             description: "All claude-agent workers have stopped. Task processing is halted."
-            runbook_url: "https://docs.kernow.io/runbooks/no-active-workers"
+            runbook_url: "https://fumadocs.kernow.io/runbooks"
 
         # Alert on slow task execution
         - alert: SlowTaskExecution
@@ -83,7 +83,7 @@ spec:
           annotations:
             summary: "AI tasks taking too long"
             description: "P95 task duration is {{ $value | humanizeDuration }}. Tasks may be timing out."
-            runbook_url: "https://docs.kernow.io/runbooks/slow-task-execution"
+            runbook_url: "https://fumadocs.kernow.io/runbooks"
 
         # NOTE: LowFeedbackVolume alert REMOVED - claude-validator service decommissioned.
         # Re-add when validator metrics are available from a new service.
