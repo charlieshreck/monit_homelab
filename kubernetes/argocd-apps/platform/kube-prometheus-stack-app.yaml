@@ -216,16 +216,6 @@ spec:
           adminPassword: H4ckwh1z
           # Disable default datasource to avoid conflicts
           defaultDatasourceEnabled: false
-          # Image renderer as sidecar container (has Chrome/Chromium built-in)
-          imageRenderer:
-            enabled: true
-            resources:
-              requests:
-                cpu: 50m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
           persistence:
             enabled: true
             size: 10Gi
