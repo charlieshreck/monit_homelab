@@ -216,6 +216,8 @@ spec:
           adminPassword: H4ckwh1z
           # Disable default datasource to avoid conflicts
           defaultDatasourceEnabled: false
+          plugins:
+            - grafana-image-renderer
           persistence:
             enabled: true
             size: 10Gi
@@ -230,7 +232,11 @@ spec:
               memory: 256Mi
             limits:
               cpu: 500m
-              memory: 512Mi
+              memory: 768Mi
+          env:
+            GF_RENDERING_SERVER_URL: http://localhost:8081/render
+            GF_RENDERING_CALLBACK_URL: http://kube-prometheus-stack-grafana:80/
+            GF_LOG_FILTERS: rendering:debug
           datasources:
             datasources.yaml:
               apiVersion: 1
