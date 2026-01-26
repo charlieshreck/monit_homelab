@@ -216,8 +216,16 @@ spec:
           adminPassword: H4ckwh1z
           # Disable default datasource to avoid conflicts
           defaultDatasourceEnabled: false
-          plugins:
-            - grafana-image-renderer
+          # Image renderer as sidecar container (has Chrome/Chromium built-in)
+          imageRenderer:
+            enabled: true
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
           persistence:
             enabled: true
             size: 10Gi
@@ -232,11 +240,7 @@ spec:
               memory: 256Mi
             limits:
               cpu: 500m
-              memory: 768Mi
-          env:
-            GF_RENDERING_SERVER_URL: http://localhost:8081/render
-            GF_RENDERING_CALLBACK_URL: http://kube-prometheus-stack-grafana:80/
-            GF_LOG_FILTERS: rendering:debug
+              memory: 512Mi
           datasources:
             datasources.yaml:
               apiVersion: 1
