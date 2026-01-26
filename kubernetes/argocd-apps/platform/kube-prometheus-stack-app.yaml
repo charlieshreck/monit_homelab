@@ -216,6 +216,11 @@ spec:
           adminPassword: H4ckwh1z
           # Disable default datasource to avoid conflicts
           defaultDatasourceEnabled: false
+          # Standalone image renderer service (deployed separately)
+          env:
+            GF_RENDERING_SERVER_URL: http://grafana-image-renderer.monitoring:8081/render
+            GF_RENDERING_CALLBACK_URL: http://kube-prometheus-stack-grafana.monitoring:80/
+            GF_LOG_FILTERS: rendering:debug
           persistence:
             enabled: true
             size: 10Gi
