@@ -94,7 +94,7 @@ spec:
               "name": "{{ .Application.Name }}@{{ .Application.Namespace }}",
               "status": "{{ if eq .Status "OK" }}resolved{{ else }}triggered{{ end }}",
               "source": ["coroot"],
-              "severity": "{{ if eq .Status "CRITICAL" }}critical{{ else if eq .Status "WARNING" }}warning{{ else }}info{{ end }}",
+              "severity": "{{ if eq .Status "CRITICAL" }}warning{{ else if eq .Status "WARNING" }}info{{ else }}info{{ end }}",
               "description": "{{ range .Reports }}{{ .Check }}: {{ .Message }} {{ end }}",
               "labels": {
                 "namespace": "{{ .Application.Namespace }}",

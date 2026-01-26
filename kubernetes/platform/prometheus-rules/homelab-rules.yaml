@@ -1,0 +1,176 @@
+---
+# Custom PrometheusRules for Kernow homelab
+# Calibrated thresholds for actual hardware specs
+# Auto-synced via ArgoCD prometheus-rules-app
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: homelab-rules
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: kube-prometheus-stack
+spec:
+  groups:
+    # ── Node-level alerts (calibrated for tight homelab resources) ──
+    - name: homelab-nodes
+      rules:
+        - alert: HomelabNodeHighCPU
+          expr: |
+            (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 < 15
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} CPU usage above 85%"
+            description: "Sustained high CPU on {{ $labels.instance }}. Normal range is 40-60% for this homelab."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "77"
+
+        - alert: HomelabNodeCriticalCPU
+          expr: |
+            (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 < 5
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.instance }} CPU usage above 95%"
+            description: "Critical CPU usage on {{ $labels.instance }}. System is genuinely struggling."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "77"
+
+        - alert: HomelabNodeHighMemory
+          expr: |
+            (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} memory usage above 85%"
+            description: "Memory usage at {{ $value | humanizePercentage }} on {{ $labels.instance }}. Normal is 45-67%."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "78"
+
+        - alert: HomelabNodeCriticalMemory
+          expr: |
+            (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.95
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.instance }} memory usage above 95% - OOM imminent"
+            description: "Critical memory usage on {{ $labels.instance }}. OOM kills imminent."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "78"
+
+        - alert: HomelabNodeDiskPressure
+          expr: |
+            (1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs"}) > 0.90
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} disk {{ $labels.mountpoint }} above 90%"
+            description: "Disk usage at {{ $value | humanizePercentage }} on {{ $labels.instance }} mount {{ $labels.mountpoint }}."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "44"
+
+        - alert: HomelabNodeDiskCritical
+          expr: |
+            (1 - node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes{fstype=~"ext4|xfs"}) > 0.95
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.instance }} disk {{ $labels.mountpoint }} above 95% - imminent full"
+            description: "Disk nearly full on {{ $labels.instance }} mount {{ $labels.mountpoint }}. Immediate attention required."
+            dashboard_uid: "rYdddlPWk"
+            panel_id: "44"
+
+    # ── Pod-level alerts ──
+    - name: homelab-pods
+      rules:
+        - alert: HomelabPodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total[1h]) > 5
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} crash looping"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has restarted {{ $value }} times in the last hour."
+            dashboard_uid: "6581e46e4e5c7ba40a07646395ef7b23"
+            panel_id: "1"
+
+        - alert: HomelabPodOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} OOM killed"
+            description: "Container {{ $labels.container }} was OOM killed. Consider increasing memory limits."
+            dashboard_uid: "6581e46e4e5c7ba40a07646395ef7b23"
+            panel_id: "1"
+
+        - alert: HomelabPVCNearFull
+          expr: |
+            kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.85
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} above 85%"
+            description: "Persistent volume {{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full."
+            dashboard_uid: "919b92a8e8041bd567af9edab12c840c"
+            panel_id: "1"
+
+        - alert: HomelabPVCCriticallyFull
+          expr: |
+            kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.95
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} above 95% - critical"
+            description: "Persistent volume {{ $labels.persistentvolumeclaim }} is nearly full at {{ $value | humanizePercentage }}."
+            dashboard_uid: "919b92a8e8041bd567af9edab12c840c"
+            panel_id: "1"
+
+    # ── Velero backup alerts ──
+    - name: homelab-backups
+      rules:
+        - alert: VeleroBackupFailed
+          expr: |
+            increase(velero_backup_failure_total[24h]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Velero backup failed in last 24h"
+            description: "{{ $value }} Velero backup failure(s) detected in the last 24 hours."
+            dashboard_uid: "k8s_views_ns"
+            panel_id: "1"
+
+        - alert: VeleroBackupMissing
+          expr: |
+            time() - velero_backup_last_successful_timestamp > 86400
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "No successful Velero backup in 24 hours"
+            description: "Last successful Velero backup was {{ $value | humanizeDuration }} ago."
+            dashboard_uid: "k8s_views_ns"
+            panel_id: "1"
+
+        - alert: VeleroBackupPartialFailure
+          expr: |
+            increase(velero_backup_partial_failure_total[24h]) > 0
+          for: 5m
+          labels:
+            severity: info
+          annotations:
+            summary: "Velero backup partial failure in last 24h"
+            description: "{{ $value }} partial backup failure(s) in the last 24 hours."

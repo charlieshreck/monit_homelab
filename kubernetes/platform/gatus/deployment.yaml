@@ -127,125 +127,78 @@ data:
         conditions:
           - "[STATUS] == 200"
 
-      # MCP Servers (Agentic Cluster)
-      - name: Infisical MCP
+      # MCP Servers — 6 consolidated domain MCPs (DNS ingress)
+      - name: Observability MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31080/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Coroot MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31081/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Proxmox MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31082/health"
+        url: "http://observability-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Infrastructure MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31083/health"
+        url: "http://infrastructure-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Knowledge MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31084/health"
+        url: "http://knowledge-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
-      - name: OPNsense MCP
+      - name: Home MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31085/health"
+        url: "http://home-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
-      - name: AdGuard MCP
+      - name: Media MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31086/health"
+        url: "http://media-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
-      - name: Cloudflare MCP
+      - name: External MCP
         group: MCP Servers
-        url: "http://10.20.0.40:31087/health"
+        url: "http://external-mcp.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
-      - name: UniFi MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31088/health"
-        interval: 60s
+      # Storage — TrueNAS health checks
+      - name: TrueNAS HDD
+        group: Storage
+        url: "https://10.10.0.50:443"
+        interval: 120s
         conditions:
           - "[STATUS] == 200"
+        client:
+          insecure: true
 
-      - name: TrueNAS MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31089/health"
-        interval: 60s
+      - name: TrueNAS Media
+        group: Storage
+        url: "https://10.10.0.60:443"
+        interval: 120s
         conditions:
           - "[STATUS] == 200"
+        client:
+          insecure: true
 
-      - name: Home Assistant MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31090/health"
+      # Network — DNS functional check (detects Port 53 dead)
+      - name: AdGuard DNS Resolution
+        group: Network
+        url: "10.10.0.1"
+        dns:
+          query-name: "google.com"
+          query-type: "A"
         interval: 60s
         conditions:
-          - "[STATUS] == 200"
-
-      - name: Arr Suite MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31091/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Homepage MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31092/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Web Search MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31093/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Browser Automation MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31094/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Plex MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31096/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
-
-      - name: Vikunja MCP
-        group: MCP Servers
-        url: "http://10.20.0.40:31097/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
+          - "[DNS_RCODE] == NOERROR"
 
       # AI Platform (Local Inference)
       - name: Ollama (qwen2.5:7b)

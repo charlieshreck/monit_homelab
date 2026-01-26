@@ -27,20 +27,8 @@ spec:
             description: "No new events have been logged to the knowledge base in over 24 hours. The learning system may be stale or broken."
             runbook_url: "https://docs.kernow.io/runbooks/learning-system-stale"
 
-        # Alert if feedback scores consistently low
-        - alert: LowFeedbackScore
-          expr: |
-            (
-              claude_validator_feedback_score_sum / claude_validator_feedback_score_count
-            ) < 0.6
-          for: 1h
-          labels:
-            severity: warning
-            team: ai-platform
-          annotations:
-            summary: "AI feedback scores are below threshold"
-            description: "Average feedback score is {{ $value | printf \"%.2f\" }} (threshold: 0.6). The AI may be underperforming."
-            runbook_url: "https://docs.kernow.io/runbooks/low-feedback-score"
+        # NOTE: LowFeedbackScore alert REMOVED - claude-validator service decommissioned.
+        # Re-add when validator metrics are available from a new service.
 
         # Alert on high task failure rate
         - alert: HighTaskFailureRate
@@ -97,15 +85,5 @@ spec:
             description: "P95 task duration is {{ $value | humanizeDuration }}. Tasks may be timing out."
             runbook_url: "https://docs.kernow.io/runbooks/slow-task-execution"
 
-        # Informational: Track feedback volume
-        - alert: LowFeedbackVolume
-          expr: |
-            increase(claude_validator_feedback_total[7d]) < 5
-          for: 1h
-          labels:
-            severity: info
-            team: ai-platform
-          annotations:
-            summary: "Low feedback volume in the last week"
-            description: "Only {{ $value }} feedback submissions in the last 7 days. Consider prompting users for more feedback."
-            runbook_url: "https://docs.kernow.io/runbooks/low-feedback-volume"
+        # NOTE: LowFeedbackVolume alert REMOVED - claude-validator service decommissioned.
+        # Re-add when validator metrics are available from a new service.

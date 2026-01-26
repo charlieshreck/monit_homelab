@@ -76,19 +76,21 @@ spec:
                   maxBackoff: 100ms
             # Scrape configs for monitoring targets
             additionalScrapeConfigs:
-              # Proxmox Ruapehu (production)
-              - job_name: 'proxmox-ruapehu'
-                scheme: https
-                tls_config:
-                  insecure_skip_verify: true
-                basic_auth:
-                  username: root@pam
-                  password: H4ckwh1z
-                static_configs:
-                  - targets: ['10.10.0.10:8006']
-                metrics_path: '/api2/prometheus'
-                params:
-                  format: ['prometheus']
+              # NOTE: proxmox-ruapehu scrape DISABLED - target is down.
+              # Proxmox health covered by Gatus + infrastructure-mcp.
+              # Restore with proper API token auth via Infisical when needed.
+              # - job_name: 'proxmox-ruapehu'
+              #   scheme: https
+              #   tls_config:
+              #     insecure_skip_verify: true
+              #   basic_auth:
+              #     username: root@pam
+              #     password: H4ckwh1z
+              #   static_configs:
+              #     - targets: ['10.10.0.10:8006']
+              #   metrics_path: '/api2/prometheus'
+              #   params:
+              #     format: ['prometheus']
               # NOTE: proxmox-carrick REMOVED - host decommissioned
 
               # Production Talos Cluster - Kubelet Metrics (via API server proxy)
@@ -166,27 +168,8 @@ spec:
                       cluster: 'monitoring'
                 metrics_path: '/metrics'
 
-              # Agentic Cluster - AI Platform Services
-              # Forever Learning System metrics (Phase 4)
-              - job_name: 'ai-platform-claude-agent'
-                scheme: http
-                static_configs:
-                  - targets: ['10.20.0.40:30200']  # claude-agent NodePort
-                    labels:
-                      cluster: 'agentic'
-                      service: 'claude-agent'
-                metrics_path: '/metrics'
-                scrape_interval: 30s
-
-              - job_name: 'ai-platform-claude-validator'
-                scheme: http
-                static_configs:
-                  - targets: ['10.20.0.40:30201']  # claude-validator NodePort
-                    labels:
-                      cluster: 'agentic'
-                      service: 'claude-validator'
-                metrics_path: '/metrics'
-                scrape_interval: 30s
+              # NOTE: claude-agent and claude-validator scrapes REMOVED.
+              # Services are not deployed. Re-add when Phase 4 services deploy.
 
               # Production Talos Cluster - kube-state-metrics (via NodePort)
               - job_name: 'talos-kube-state-metrics'
@@ -339,17 +322,26 @@ spec:
                 - match:
                     alertname: 'InfoInhibitor'
                   receiver: 'null'
+                # Renovate CronJob leaves stuck pods - expected
+                - match:
+                    alertname: 'KubeJobNotCompleted'
+                    namespace: 'renovate'
+                  receiver: 'null'
+                # Container waiting during rollouts is transient
+                - match:
+                    alertname: 'KubeContainerWaiting'
+                  receiver: 'null'
                 # Critical alerts - immediate
                 - match:
                     severity: critical
                   receiver: 'alerting-pipeline'
                   group_wait: 10s
-                  repeat_interval: 1h
+                  repeat_interval: 2h
                 # Warning alerts
                 - match:
                     severity: warning
                   receiver: 'alerting-pipeline'
-                  repeat_interval: 4h
+                  repeat_interval: 12h
             receivers:
               - name: 'null'
               - name: 'alerting-pipeline'
@@ -416,6 +408,8 @@ spec:
             etcd: false           # No etcd in K3s
             kubeApiserver: true
             kubeScheduler: false  # DISABLED: Talos control plane not exposed
+            kubeSchedulerAlerting: false
+            kubeSchedulerRecording: false
             kubeControllerManager: false  # DISABLED: Talos control plane not exposed
             kubelet: true
             kubeProxy: false      # DISABLED: Talos uses Cilium, not kube-proxy
