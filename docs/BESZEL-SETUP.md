@@ -67,7 +67,7 @@ sudo systemctl enable beszel-agent
 sudo systemctl start beszel-agent
 ```
 
-### Option 3: Kubernetes Agent (for monitoring the K3s cluster itself)
+### Option 3: Kubernetes Agent (for monitoring the Talos cluster itself)
 
 ```yaml
 apiVersion: apps/v1
@@ -126,7 +126,7 @@ The hub will connect to the agent via SSH tunnel on port 45876.
 | **Proxmox Carrick** | 10.30.0.10 | Bare Metal | High |
 | **Plex VM** | 10.10.0.50 | VM | High |
 | **TrueNAS** | 10.10.0.100 | VM | Medium |
-| **K3s Monitoring** | 10.30.0.20 | LXC | Medium |
+| **Talos Monitoring** | 10.30.0.20 | VM (Talos) | Medium |
 | **Talos Control** | 10.10.0.40 | VM | Low (read-only OS) |
 | **Talos Worker 1** | 10.10.0.41 | VM | Low |
 | **Talos Worker 2** | 10.10.0.42 | VM | Low |
@@ -183,7 +183,8 @@ docker logs beszel-agent       # For Docker
 ss -tlnp | grep 45876
 
 # Test connectivity from hub
-ssh root@10.30.0.20  # SSH into K3s LXC
+# Note: Talos has no SSH. Use talosctl or kubectl for node operations.
+# talosctl --nodes 10.30.0.20 health
 nc -zv <target-ip> 45876
 ```
 

@@ -95,7 +95,7 @@ data:
         client:
           insecure: true
 
-      - name: Monitoring K3s Cluster
+      - name: Monitoring Talos Cluster
         group: Infrastructure
         url: "https://10.30.0.20:6443"
         interval: 60s

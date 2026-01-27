@@ -13,16 +13,16 @@ This repository uses GitOps principles. ALL infrastructure changes MUST be:
 
 | Component | Tool | Workflow |
 |-----------|------|----------|
-| **Proxmox LXC** | Terraform | `terraform plan` → `terraform apply` |
-| **Kubernetes Resources** | ArgoCD | Commit to git → ArgoCD auto-sync |
-| **Secrets** | Infisical | Add to Infisical UI → InfisicalSecret CR in K8s |
+| **Talos VM** | Terraform | `terraform plan` → `terraform apply` |
+| **Kubernetes Resources** | ArgoCD | Commit to git → ArgoCD auto-sync (from prod cluster) |
+| **Secrets** | Infisical | Add to Infisical → InfisicalSecret CR in K8s |
 
 ## The ONLY Correct Workflow
 
-### For Terraform (K3s LXC on Carrick)
+### For Terraform (Talos VM on Carrick)
 
 ```bash
-cd /home/monit_homelab/terraform/monitoring-lxc
+cd /home/monit_homelab/terraform/talos-single-node
 
 # 1. Make changes to .tf files
 vim main.tf
@@ -41,64 +41,66 @@ terraform plan -out=monitoring.plan
 terraform apply monitoring.plan
 
 # 6. Export kubeconfig if cluster changed
-export KUBECONFIG=~/.kube/monitoring-k3s.yaml
+export KUBECONFIG=/home/monit_homelab/kubeconfig
 ```
 
-### For Kubernetes (Monitoring stack, MCP servers, Platform)
+### For Kubernetes (Monitoring stack)
 
 ```bash
 cd /home/monit_homelab
 
 # 1. Make changes to manifests
-vim kubernetes/platform/mcp-servers/coroot-mcp/deployment.yaml
+vim kubernetes/platform/beszel/deployment.yaml
 
 # 2. Commit to git FIRST (this is the deployment!)
 git add .
 git commit -m "Description of change"
 git push
 
-# 3. ArgoCD automatically syncs within 3 minutes
-# OR force sync:
-kubectl patch application mcp-servers -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"admin"},"sync":{}}}'
+# 3. ArgoCD (on prod cluster) automatically syncs within 3 minutes
+# OR force sync from prod cluster:
+kubectl --kubeconfig $KUBECONFIG_PROD patch application <app> -n argocd --type merge \
+  -p '{"operation":{"initiatedBy":{"username":"admin"},"sync":{}}}'
 
-# 4. Verify
-kubectl get pods -n mcp-servers
+# 4. Verify (on monit cluster)
+export KUBECONFIG=$KUBECONFIG_MONIT
+kubectl get pods -n monitoring
 ```
 
 ### For Secrets
 
 ```bash
-# 1. Add secret to Infisical UI
+# 1. Add secret to Infisical
 #    Project: prod_homelab (slug: prod-homelab-y-nij)
 #    Environment: prod
-#    Path: /mcp-credentials (or other appropriate path)
+#    Path: /observability/<service>
 
 # 2. Create InfisicalSecret CR manifest
-vim kubernetes/platform/mcp-servers/infisical-credentials.yaml
+vim kubernetes/platform/infisical-credentials.yaml
 
 # 3. Commit to git
 git add .
-git commit -m "Add InfisicalSecret for MCP credentials"
+git commit -m "Add InfisicalSecret for credentials"
 git push
 
 # 4. ArgoCD auto-syncs
 # Secret appears in K8s automatically
 
 # 5. Verify
-kubectl get infisicalsecret -n mcp-servers
-kubectl get secret mcp-credentials -n mcp-servers
+kubectl get infisicalsecret -n monitoring
+kubectl get secret <name> -n monitoring
 ```
 
 ## FORBIDDEN Actions
 
-### ❌ NEVER DO THESE:
+### NEVER DO THESE:
 
 ```bash
 # WRONG: Manual kubectl apply
 kubectl apply -f deployment.yaml
 
 # WRONG: Manual kubectl edit
-kubectl edit deployment coroot-mcp
+kubectl edit deployment grafana
 
 # WRONG: Manual kubectl create
 kubectl create secret generic my-secret
@@ -109,26 +111,29 @@ terraform apply
 # WRONG: Hardcoded secrets in manifests
 echo "password: mypassword" > secret.yaml
 
-# WRONG: Manual LXC creation in Proxmox UI
-# (Use Terraform instead)
+# WRONG: SSH to the node (Talos has no SSH)
+ssh root@10.30.0.20
 ```
 
-### ✅ CORRECT Alternatives:
+### CORRECT Alternatives:
 
 ```bash
 # RIGHT: Commit to git, let ArgoCD sync
 git add . && git commit -m "Update deployment" && git push
 
 # RIGHT: Update manifest in git
-vim kubernetes/platform/coroot-mcp/deployment.yaml
+vim kubernetes/platform/beszel/deployment.yaml
 git add . && git commit && git push
 
 # RIGHT: Use InfisicalSecret CR
-# Add to Infisical UI, create InfisicalSecret manifest, commit
+# Add to Infisical, create InfisicalSecret manifest, commit
 
 # RIGHT: Commit terraform changes first
 git add . && git commit && git push
 terraform plan && terraform apply
+
+# RIGHT: Use talosctl for node operations
+talosctl --nodes 10.30.0.20 health
 ```
 
 ## Exception: Manual ConfigMaps for Sensitive Configs
@@ -141,11 +146,11 @@ terraform plan && terraform apply
 
 kubectl create configmap kubeconfig-prod \
   --from-file=kubeconfig=/home/prod_homelab/infrastructure/terraform/generated/kubeconfig \
-  -n mcp-servers
+  -n monitoring
 
 kubectl create configmap talosconfig \
   --from-file=talosconfig=/home/prod_homelab/infrastructure/terraform/generated/talosconfig \
-  -n mcp-servers
+  -n monitoring
 ```
 
 **Always document manual ConfigMaps in README.md** so they can be recreated after cluster rebuild.
@@ -163,8 +168,8 @@ kubectl create configmap talosconfig \
    - Idempotent operations
 
 3. **Automated deployment**
-   - ArgoCD watches git repo
-   - Automatically applies changes
+   - ArgoCD (on prod cluster) watches this git repo
+   - Automatically applies changes to monitoring cluster
    - Self-healing (reverts manual changes)
 
 4. **No kubectl apply**
@@ -210,10 +215,11 @@ terraform apply
 
 ## Monitoring Cluster Specifics
 
-- **K3s**: Single-node cluster on Proxmox Carrick (10.30.0.20)
-- **Purpose**: Monitoring infrastructure (Coroot, VictoriaMetrics, Grafana, MCP servers)
-- **Storage**: NFS from TrueNAS-M (10.30.0.120) + local-path
-- **ArgoCD**: Project "monitoring" for all apps
+- **Talos Linux**: Single-node VM on Proxmox Carrick (10.30.0.20)
+- **Kubernetes**: v1.34.1 with Cilium CNI
+- **Purpose**: Monitoring infrastructure (Coroot, VictoriaMetrics, Grafana, etc.)
+- **Storage**: NFS from TrueNAS-M (10.30.0.120) + Cilium LB (10.30.0.90-99)
+- **ArgoCD**: Managed remotely from prod cluster
 
 ---
 

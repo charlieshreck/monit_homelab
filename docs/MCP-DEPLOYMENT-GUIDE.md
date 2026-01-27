@@ -86,7 +86,7 @@ COROOT_API_KEY=<get from Coroot UI: Settings → API Keys>
 These files are NOT committed to git for security. Create them manually:
 
 ```bash
-# SSH to monitoring K3s node
+# SSH to monitoring Talos node
 ssh root@10.30.0.20
 
 # Create namespace first (if not already created)
@@ -134,7 +134,7 @@ Components:
 - Infisical MCP: Query secrets from prod-homelab-y-nij
 - Coroot MCP: Observability queries for all clusters
 - Proxmox MCP: Manage Ruapehu (prod) and Carrick (monitoring)
-- Kubernetes MCP: Manage prod Talos and monitoring K3s clusters
+- Kubernetes MCP: Manage prod Talos and monitoring Talos clusters
 - Talos MCP: Manage Talos OS nodes
 - Network MCP: OPNsense, UniFi, AdGuard management
 
@@ -249,7 +249,7 @@ From Claude Code in either repo:
 
 # Test Kubernetes MCP
 "List all pods in argocd namespace on production cluster"
-"Show all pods in monitoring namespace on K3s cluster"
+"Show all pods in monitoring namespace on Talos cluster"
 
 # Test Talos MCP
 "Check health of all Talos nodes"
@@ -301,7 +301,7 @@ kubectl logs -n infisical-operator-system deployment/infisical-operator-controll
 ### MCP Server Not Responding
 
 ```bash
-# Test from K3s node
+# Test from monitoring cluster
 ssh root@10.30.0.20
 curl http://localhost:30080  # Test infisical-mcp
 
@@ -336,7 +336,7 @@ kubectl create configmap talosconfig \
 | proxmox-ruapehu-mcp | 30082 | Manage production Proxmox (10.10.0.10) |
 | proxmox-carrick-mcp | 30083 | Manage monitoring Proxmox (10.30.0.10) |
 | kubernetes-prod-mcp | 30084 | Manage production Talos cluster |
-| kubernetes-monitoring-mcp | 30085 | Manage monitoring K3s cluster |
+| kubernetes-monitoring-mcp | 30085 | Manage monitoring Talos cluster |
 | talos-mcp | 30086 | Manage Talos OS nodes |
 | opnsense-mcp | 30087 | Manage OPNsense firewall |
 | unifi-mcp | 30088 | Manage UniFi network |
@@ -461,5 +461,5 @@ kubectl patch application mcp-servers -n argocd --type merge -p '{"operation":{"
 ---
 
 **Last Updated**: 2025-12-21
-**Deployed On**: Monitoring K3s Cluster (10.30.0.20)
+**Deployed On**: Monitoring Talos Cluster (10.30.0.20)
 **Managed By**: ArgoCD (GitOps)

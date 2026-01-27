@@ -1,6 +1,6 @@
-# NVMe-oF Setup Guide for TrueNAS Scale → K3s Monitoring Cluster
+# NVMe-oF Setup Guide for TrueNAS Scale → Talos Monitoring Cluster
 
-This guide walks through setting up NVMe over Fabrics (NVMe-oF) TCP from TrueNAS Scale to the K3s monitoring cluster for high-performance storage.
+This guide walks through setting up NVMe over Fabrics (NVMe-oF) TCP from TrueNAS Scale to the Talos monitoring cluster for high-performance storage.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ This guide walks through setting up NVMe over Fabrics (NVMe-oF) TCP from TrueNAS
 └─────────────────────────────────────────────────────────────────┘
                               ↓ NVMe-oF TCP
 ┌─────────────────────────────────────────────────────────────────┐
-│ K3s Monitor LXC (10.30.0.20) - NVMe-oF Initiator               │
+│ Talos Monitor VM (10.30.0.20) - NVMe-oF Initiator               │
 │ ┌─────────────────────────────────────────────────────────────┐ │
 │ │ nvme-cli installed                                          │ │
 │ │ Connected namespaces:                                       │ │
@@ -38,8 +38,8 @@ This guide walks through setting up NVMe over Fabrics (NVMe-oF) TCP from TrueNAS
 ## Prerequisites
 
 - ✅ TrueNAS Scale installed (10.30.0.120)
-- ✅ K3s cluster running (10.30.0.20)
-- ✅ Network connectivity between TrueNAS and K3s
+- ✅ Talos cluster running (10.30.0.20)
+- ✅ Network connectivity between TrueNAS and Talos
 - ⚠️ TrueNAS web UI access (http://10.30.0.120)
 
 ## Part 1: TrueNAS Scale Configuration (Target Side)
@@ -94,7 +94,7 @@ If NVMe-oF CLI setup is complex, iSCSI is a solid alternative with web UI suppor
 1. Go to **Shares → Block (iSCSI)**
 2. Click **Wizard**
 3. Configure target and extent for each zvol
-4. Connect from K3s using `iscsiadm`
+4. Connect from Talos node using `iscsiadm`
 
 *Skip to "Alternative: iSCSI Setup" section below if choosing this.*
 
@@ -130,7 +130,7 @@ modprobe nvmet-tcp
 mkdir -p /sys/kernel/config/nvmet/subsystems/nqn.2024-12.local.truenas:monitoring
 cd /sys/kernel/config/nvmet/subsystems/nqn.2024-12.local.truenas:monitoring
 
-# Allow any host (or specify K3s host NQN later)
+# Allow any host (or specify Talos host NQN later)
 echo 1 > attr_allow_any_host
 
 # Create namespace 1 (VictoriaMetrics - 200GB)
@@ -252,11 +252,11 @@ Expected output: Port 4420 should be listening on 10.30.0.120
 
 ---
 
-## Part 2: K3s Cluster Configuration (Initiator Side)
+## Part 2: Talos Cluster Configuration (Initiator Side)
 
-### Step 7: Install NVMe-oF Client Tools on K3s Node
+### Step 7: Install NVMe-oF Client Tools on Talos Node
 
-SSH to K3s LXC (10.30.0.20):
+SSH to Talos node (10.30.0.20):
 
 ```bash
 ssh root@10.30.0.20
@@ -306,7 +306,7 @@ nvme list
 lsblk | grep nvme
 ```
 
-### Step 9: Persist NVMe-oF Connection (K3s Node)
+### Step 9: Persist NVMe-oF Connection (Talos Node)
 
 Create systemd service for automatic connection on boot:
 
@@ -404,7 +404,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - k3s-monitor  # K3s node hostname
+                - talos-monitor  # Talos node hostname
 ```
 
 **VictoriaLogs PV:**
@@ -434,7 +434,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - k3s-monitor
+                - talos-monitor
 ```
 
 **PVCs remain the same** but update storageClassName:
@@ -467,7 +467,7 @@ ls -la /dev/zvol/Restormal/victoria-metrics
 ls -la /dev/zvol/Trelawney/victoria-logs
 ```
 
-### K3s Side
+### Talos Side
 
 ```bash
 # Check nvme-cli installed
@@ -518,7 +518,7 @@ If NVMe-oF proves difficult, iSCSI provides similar performance with full web UI
 4. **Create Portal** (10.30.0.120:3260)
 5. **Associate** extent → target
 
-### K3s iSCSI Client
+### Talos iSCSI Client
 
 ```bash
 apt-get install -y open-iscsi

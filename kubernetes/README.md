@@ -1,6 +1,6 @@
 # Monitoring Stack - Kubernetes Manifests
 
-This directory contains Kubernetes manifests for the monitoring infrastructure deployed on the K3s cluster at 10.30.0.20.
+Kubernetes manifests for the monitoring infrastructure deployed on the Talos Linux cluster at 10.30.0.20.
 
 ## Architecture
 
@@ -11,7 +11,8 @@ This directory contains Kubernetes manifests for the monitoring infrastructure d
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ Monitoring K3s Cluster (10.30.0.20)                             │
+│ Monitoring Talos Cluster (10.30.0.20)                           │
+│ Talos Linux v1.11.5 + Kubernetes v1.34.1 + Cilium              │
 │ ┌─────────────────────────────────────────────────────────────┐ │
 │ │ Namespace: monitoring                                       │ │
 │ │ ├─ Prometheus (metrics scraping)                           │ │
@@ -19,13 +20,14 @@ This directory contains Kubernetes manifests for the monitoring infrastructure d
 │ │ ├─ VictoriaLogs (500GB NFS - 6mo retention)               │ │
 │ │ ├─ Grafana (dashboards + datasources)                     │ │
 │ │ ├─ AlertManager (alerts routing)                          │ │
+│ │ ├─ Coroot (eBPF observability)                            │ │
 │ │ ├─ Beszel (host monitoring)                               │ │
 │ │ └─ Gatus (endpoint health checks)                         │ │
 │ └─────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ TrueNAS (10.30.0.120)                                           │
+│ TrueNAS-M (10.30.0.120)                                        │
 │ ├─ /mnt/Restormal/victoria-metrics (200GB)                     │
 │ └─ /mnt/Trelawney/victoria-logs (500GB)                        │
 └─────────────────────────────────────────────────────────────────┘
@@ -60,12 +62,12 @@ kubernetes/
 
 ### Prerequisites
 
-1. ✅ **K3s cluster running** at 10.30.0.20
-2. ⚠️  **TrueNAS NFS exports** configured:
-   - `/mnt/Restormal/victoria-metrics` → accessible from 10.30.0.20
-   - `/mnt/Trelawney/victoria-logs` → accessible from 10.30.0.20
-3. ⚠️  **Production ArgoCD** accessible (on production cluster)
-4. ⚠️  **Git repository** pushed to GitHub
+1. **Talos cluster running** at 10.30.0.20 (deployed via Terraform)
+2. **TrueNAS NFS exports** configured:
+   - `/mnt/Restormal/victoria-metrics` accessible from 10.30.0.20
+   - `/mnt/Trelawney/victoria-logs` accessible from 10.30.0.20
+3. **Production ArgoCD** accessible (on production cluster)
+4. **Git repository** pushed to GitHub
 
 ### Step 1: Configure TrueNAS NFS Exports
 
@@ -87,30 +89,19 @@ chmod 777 /mnt/Trelawney/victoria-logs
 # Networks: 10.30.0.20/32
 # Maproot User: root
 # Maproot Group: root
-
 # Repeat for Trelawney
 ```
 
-### Step 2: Verify NFS Mounts
+### Step 2: Verify NFS Access
 
 ```bash
-# From monitoring K3s LXC (10.30.0.20)
-ssh root@10.30.0.20
-
-# Install NFS client
-apt-get update && apt-get install -y nfs-common
-
-# Test NFS access
+# From the iac LXC or any host that can reach the NFS server
+# Note: Talos is immutable - you cannot SSH to it or install packages on it
+# Test NFS from a machine that has nfs-common installed:
 showmount -e 10.30.0.120
 # Should show:
 #   /mnt/Restormal/victoria-metrics 10.30.0.20
 #   /mnt/Trelawney/victoria-logs 10.30.0.20
-
-# Test mount
-mkdir -p /mnt/test
-mount -t nfs 10.30.0.120:/mnt/Restormal/victoria-metrics /mnt/test
-df -h | grep test
-umount /mnt/test
 ```
 
 ### Step 3: Push to GitHub
@@ -122,14 +113,7 @@ cd /home/monit_homelab
 git add kubernetes/
 
 # Commit
-git commit -m "Add monitoring stack Kubernetes manifests
-
-- kube-prometheus-stack (Prometheus, Grafana, AlertManager)
-- VictoriaMetrics with 200GB NFS storage (12mo retention)
-- VictoriaLogs with 500GB NFS storage (6mo retention)
-- Beszel for host monitoring
-- Gatus for endpoint health checks
-- App-of-apps pattern for GitOps deployment"
+git commit -m "Add monitoring stack Kubernetes manifests"
 
 # Push to GitHub
 git push origin main
@@ -138,10 +122,8 @@ git push origin main
 ### Step 4: Register Monitoring Cluster with Production ArgoCD
 
 ```bash
-# From iac LXC (10.10.0.175) or workstation with kubectl access
-
-# Set production cluster context
-export KUBECONFIG=~/.kube/config  # Production Talos cluster
+# From iac LXC (10.10.0.175) with kubectl access to prod cluster
+export KUBECONFIG=$KUBECONFIG_PROD
 
 # Get ArgoCD admin password
 kubectl -n argocd get secret argocd-initial-admin-secret \
@@ -151,22 +133,19 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 argocd login <production-argocd-url> --username admin
 
 # Register monitoring cluster
-argocd cluster add monitoring-k3s \
-  --kubeconfig ~/.kube/monitoring-k3s.yaml \
-  --name monitoring-k3s
+argocd cluster add monitoring-cluster \
+  --kubeconfig /home/monit_homelab/kubeconfig \
+  --name monitoring-cluster
 
 # Verify registration
 argocd cluster list
-# Should show:
-#   SERVER                          NAME             VERSION  STATUS
-#   https://kubernetes.default.svc  in-cluster       1.28+    Successful
-#   https://10.30.0.20:6443         monitoring-k3s   1.33+    Successful
 ```
 
 ### Step 5: Deploy App-of-Apps
 
 ```bash
 # Apply the root Application to production ArgoCD
+# (This is one of the rare manual kubectl apply exceptions)
 kubectl apply -f kubernetes/bootstrap/app-of-apps.yaml
 
 # Watch deployment
@@ -174,22 +153,13 @@ kubectl get applications -n argocd -w
 
 # Check sync status
 argocd app list
-
-# Individual app status
-argocd app get monitoring-platform
-argocd app get monitoring-storage
-argocd app get kube-prometheus-stack
-argocd app get victoria-metrics
-argocd app get victoria-logs
-argocd app get beszel
-argocd app get gatus
 ```
 
 ### Step 6: Verify Deployment
 
 ```bash
 # Switch to monitoring cluster
-export KUBECONFIG=~/.kube/monitoring-k3s.yaml
+export KUBECONFIG=/home/monit_homelab/kubeconfig
 
 # Check namespace
 kubectl get namespace monitoring
@@ -201,23 +171,8 @@ kubectl get pvc -n monitoring
 # Check pods
 kubectl get pods -n monitoring
 
-# Expected pods:
-# - prometheus-kube-prometheus-stack-prometheus-0
-# - kube-prometheus-stack-grafana-*
-# - alertmanager-kube-prometheus-stack-alertmanager-0
-# - victoria-metrics-*
-# - victoria-logs-*
-# - beszel-*
-# - gatus-*
-
 # Check services
 kubectl get svc -n monitoring
-
-# Check logs
-kubectl logs -n monitoring -l app.kubernetes.io/name=prometheus
-kubectl logs -n monitoring -l app.kubernetes.io/name=grafana
-kubectl logs -n monitoring -l app=victoria-metrics
-kubectl logs -n monitoring -l app=victoria-logs
 ```
 
 ## Access Applications
@@ -225,12 +180,12 @@ kubectl logs -n monitoring -l app=victoria-logs
 ### Grafana
 
 ```bash
-# Port forward
-kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+# Via ingress
+# https://grafana.kernow.io
 
+# Or port forward
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
 # Access: http://localhost:3000
-# Username: admin
-# Password: H4ckwh1z
 ```
 
 **Datasources (pre-configured):**
@@ -241,27 +196,21 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
 ### Prometheus
 
 ```bash
-# Port forward
 kubectl port-forward -n monitoring svc/kube-prometheus-stack-prometheus 9090:9090
-
 # Access: http://localhost:9090
 ```
 
 ### Gatus Status Page
 
 ```bash
-# Port forward
 kubectl port-forward -n monitoring svc/gatus 8080:8080
-
 # Access: http://localhost:8080
 ```
 
 ### Beszel Dashboard
 
 ```bash
-# Port forward
 kubectl port-forward -n monitoring svc/beszel 8090:8090
-
 # Access: http://localhost:8090
 ```
 
@@ -273,8 +222,8 @@ Prometheus is configured to scrape:
 |--------|---------|---------|-------|
 | **Proxmox Ruapehu** | 10.10.0.10:8006 | Proxmox VE metrics | Production hypervisor |
 | **Proxmox Carrick** | 10.30.0.10:8006 | Proxmox VE metrics | Monitoring hypervisor |
-| **K3s Monitor** | 10.30.0.20:10250 | Kubelet metrics | Monitoring cluster node |
-| **Talos Cluster** | 10.10.0.40-43 | Kubernetes metrics | (Future - requires network routing) |
+| **Talos Monitor** | 10.30.0.20:10250 | Kubelet metrics | Monitoring cluster node |
+| **Talos Cluster** | 10.10.0.40-43 | Kubernetes metrics | Production cluster nodes |
 
 ## Storage Details
 
@@ -315,24 +264,24 @@ kubectl describe pod -n monitoring <pod-name>
 kubectl describe pv victoria-metrics-pv
 kubectl describe pv victoria-logs-pv
 
-# Verify NFS from K3s node
-ssh root@10.30.0.20
+# Verify NFS from a Linux host (NOT from Talos - it has no shell)
 showmount -e 10.30.0.120
 
-# Test manual mount
+# Test mount from iac LXC
 mount -t nfs 10.30.0.120:/mnt/Restormal/victoria-metrics /mnt/test
 ```
 
 ### ArgoCD sync issues
 
 ```bash
-# Check Application status
+# Check Application status (from prod cluster)
+export KUBECONFIG=$KUBECONFIG_PROD
 kubectl get application -n argocd monitoring-platform -o yaml
 
 # Manual sync
 argocd app sync monitoring-platform
 
-# Force sync (nuclear option)
+# Force sync
 argocd app sync monitoring-platform --force
 ```
 
@@ -371,14 +320,6 @@ Manual sync:
 ```bash
 argocd app sync <app-name>
 ```
-
-## Next Steps
-
-1. Add Cloudflare Tunnel ingress for external Grafana access
-2. Configure AlertManager receivers (Slack/Discord)
-3. Deploy Beszel agents to monitored hosts
-4. Create Grafana dashboards for Proxmox/K3s/Talos
-5. Setup cross-network routing for Talos cluster monitoring
 
 ## Resources
 

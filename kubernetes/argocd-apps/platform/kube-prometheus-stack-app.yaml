@@ -156,8 +156,8 @@ spec:
                       cluster: 'production'
                 metrics_path: '/metrics'
 
-              # K3s monitoring cluster - kubelet metrics
-              - job_name: 'k3s-monitor'
+              # Talos monitoring cluster - kubelet metrics
+              - job_name: 'talos-monitor'
                 scheme: https
                 tls_config:
                   insecure_skip_verify: true
@@ -405,7 +405,7 @@ spec:
           create: true
           rules:
             alertmanager: true
-            etcd: false           # No etcd in K3s
+            etcd: false           # etcd not exposed in Talos
             kubeApiserver: true
             kubeScheduler: false  # DISABLED: Talos control plane not exposed
             kubeSchedulerAlerting: false
