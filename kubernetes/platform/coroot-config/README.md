@@ -8,7 +8,7 @@ Deploys Coroot server on monitoring cluster using Custom Resource with external 
 - **NO built-in Prometheus**: Eliminates duplicate metric storage
 - **ClickHouse**: 100Gi for eBPF traces/profiles/logs only (metrics in Victoria Metrics)
 - **Server State**: 10Gi PVC for configuration/cache
-- **Service**: ClusterIP (accessed via Traefik ingress)
+- **Service**: ClusterIP managed by Coroot operator (accessed via Traefik ingress)
 
 ## Access
 
