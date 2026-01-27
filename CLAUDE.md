@@ -82,7 +82,7 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 
 | Resource | IP | Purpose |
 |----------|-----|---------|
-| Carrick (Proxmox) | 10.30.0.10 | Hypervisor (proxmox-monit.kernow.io) |
+| Carrick (Proxmox) | 10.30.0.10 | Hypervisor (proxmox.monit.kernow.io) |
 | Gateway | 10.30.0.1 | Network gateway |
 | talos-monitor | 10.30.0.20 | Monitoring cluster node |
 | Traefik LB | 10.30.0.90 | Ingress load balancer (Cilium) |
