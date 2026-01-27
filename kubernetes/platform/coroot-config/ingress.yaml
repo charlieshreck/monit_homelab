@@ -1,0 +1,50 @@
+---
+# Coroot - User-facing (coroot.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: coroot
+  namespace: coroot
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Coroot"
+    gethomepage.dev/description: "eBPF Observability Platform"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "mdi-chart-line"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - coroot.kernow.io
+      secretName: kernow-io-tls
+  rules:
+    - host: coroot.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: coroot-coroot
+                port:
+                  number: 8080
+---
+# Coroot - Internal (coroot.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: coroot-internal
+  namespace: coroot
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: coroot.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: coroot-coroot
+                port:
+                  number: 8080

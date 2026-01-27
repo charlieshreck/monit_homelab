@@ -1,0 +1,168 @@
+---
+# Grafana - User-facing (grafana.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Grafana"
+    gethomepage.dev/description: "Monitoring Dashboards"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "grafana"
+    gethomepage.dev/widget.type: "grafana"
+    gethomepage.dev/widget.url: "https://grafana.kernow.io"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - grafana.kernow.io
+      secretName: kernow-io-tls
+  rules:
+    - host: grafana.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 80
+---
+# Prometheus - Internal (prometheus.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: prometheus.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-prometheus
+                port:
+                  number: 9090
+---
+# AlertManager - Internal (alertmanager.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: alertmanager.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-alertmanager
+                port:
+                  number: 9093
+---
+# VictoriaMetrics - Internal (victoriametrics.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: victoriametrics
+  namespace: monitoring
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: victoriametrics.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: victoria-metrics-victoria-metrics-single-server
+                port:
+                  number: 8428
+---
+# VictoriaLogs - Internal (victorialogs.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: victorialogs
+  namespace: monitoring
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: victorialogs.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: victoria-logs-victoria-logs-single-server
+                port:
+                  number: 9428
+---
+# Gatus - Internal (gatus.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gatus
+  namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Gatus"
+    gethomepage.dev/description: "Endpoint Health Monitoring"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "gatus"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: gatus.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gatus
+                port:
+                  number: 8080
+---
+# Beszel - User-facing (beszel.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: beszel
+  namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Beszel"
+    gethomepage.dev/description: "Host Monitoring"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/icon: "mdi-server"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - beszel.kernow.io
+      secretName: kernow-io-tls
+  rules:
+    - host: beszel.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: beszel
+                port:
+                  number: 8090

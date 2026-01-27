@@ -80,7 +80,7 @@ spec:
           image: ghcr.io/coroot/coroot-cluster-agent:latest
           env:
             - name: COROOT_URL
-              value: "http://10.30.0.20:32702"
+              value: "http://coroot.monit.kernow.io"
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
@@ -151,13 +151,13 @@ spec:
                   name: coroot-agent-apikey
                   key: agentic_apikey
             - name: METRICS_ENDPOINT
-              value: "http://10.30.0.20:32702/v1/metrics"
+              value: "http://coroot.monit.kernow.io/v1/metrics"
             - name: LOGS_ENDPOINT
-              value: "http://10.30.0.20:32702/v1/logs"
+              value: "http://coroot.monit.kernow.io/v1/logs"
             - name: TRACES_ENDPOINT
-              value: "http://10.30.0.20:32702/v1/traces"
+              value: "http://coroot.monit.kernow.io/v1/traces"
             - name: PROFILES_ENDPOINT
-              value: "http://10.30.0.20:32702/v1/profiles"
+              value: "http://coroot.monit.kernow.io/v1/profiles"
           securityContext:
             privileged: true
             capabilities:

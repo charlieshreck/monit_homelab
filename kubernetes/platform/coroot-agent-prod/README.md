@@ -17,7 +17,7 @@ API key must exist in Infisical:
 
 ## Configuration
 
-- **Coroot Server URL**: `http://10.30.0.20:32702` (NodePort on monitoring cluster)
+- **Coroot Server URL**: `http://coroot.monit.kernow.io` (Traefik ingress on monitoring cluster)
 - **API Key**: Synced from Infisical (`application_apikey`)
 - **Cluster Name**: `prod-homelab`
 

@@ -139,12 +139,7 @@ resource "kubectl_manifest" "cilium_l2_announcement" {
     spec = {
       loadBalancerIPs = true
       nodeSelector = {
-        matchExpressions = [
-          {
-            key      = "node-role.kubernetes.io/control-plane"
-            operator = "DoesNotExist"
-          }
-        ]
+        matchLabels = {}
       }
     }
   })

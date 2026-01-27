@@ -122,7 +122,7 @@ data:
 
       - name: Coroot
         group: Monitoring
-        url: "http://10.30.0.20:32702"
+        url: "http://coroot-coroot.coroot.svc:8080"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -485,5 +485,4 @@ spec:
       protocol: TCP
       port: 8080
       targetPort: 8080
-      nodePort: 32080  # External access for cross-cluster queries
-  type: NodePort
+  type: ClusterIP

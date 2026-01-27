@@ -16,9 +16,9 @@ Cloudflare Tunnel Ingress (prod cluster)
     ↓ (routes to)
 External Service (ClusterIP, port 80)
     ↓ (backed by)
-Manual Endpoints (10.30.0.20:NodePort)
-    ↓ (routes to)
-Monitoring Cluster NodePort Services (10.30.0.20)
+Manual Endpoints (10.30.0.90:80 - Traefik LB)
+    ↓ (routes to via Host header)
+Monitoring Cluster Traefik Ingress (10.30.0.90)
 ```
 
 ## Implementation Details
@@ -70,7 +70,7 @@ ClusterIP services without selectors (no pods in prod cluster):
 - gatus-external, beszel-external, coroot-external
 
 #### endpoints.yaml
-Manual Endpoints objects pointing to monitoring cluster NodePorts:
+Manual Endpoints objects pointing to monitoring cluster Traefik LB:
 ```yaml
 apiVersion: v1
 kind: Endpoints
@@ -79,22 +79,22 @@ metadata:
   namespace: apps
 subsets:
   - addresses:
-      - ip: 10.30.0.20
+      - ip: 10.30.0.90
     ports:
       - name: http
-        port: 30081
+        port: 80
         protocol: TCP
 ```
 
-**Mapping**:
-- grafana-external:80 → 10.30.0.20:30081
-- prometheus-external:80 → 10.30.0.20:30082
-- alertmanager-external:80 → 10.30.0.20:30083
-- victoriametrics-external:80 → 10.30.0.20:30084
-- victorialogs-external:80 → 10.30.0.20:30085
-- gatus-external:80 → 10.30.0.20:30086
-- beszel-external:80 → 10.30.0.20:30087
-- coroot-external:80 → 10.30.0.20:32702
+**Mapping** (all route via Traefik Host header):
+- grafana-external:80 → 10.30.0.90:80 (grafana.kernow.io)
+- prometheus-external:80 → 10.30.0.90:80 (prometheus.kernow.io)
+- alertmanager-external:80 → 10.30.0.90:80 (alertmanager.kernow.io)
+- victoriametrics-external:80 → 10.30.0.90:80 (victoria-metrics.kernow.io)
+- victorialogs-external:80 → 10.30.0.90:80 (victoria-logs.kernow.io)
+- gatus-external:80 → 10.30.0.90:80 (gatus.kernow.io)
+- beszel-external:80 → 10.30.0.90:80 (beszel.kernow.io)
+- coroot-external:80 → 10.30.0.90:80 (coroot.kernow.io)
 
 #### cloudflare-tunnel-ingresses.yaml
 Ingress resources with Homepage auto-discovery annotations:

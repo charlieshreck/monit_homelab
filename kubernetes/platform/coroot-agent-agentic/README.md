@@ -7,7 +7,7 @@ Deploys Coroot agents to the agentic cluster (10.20.0.0/24) for comprehensive eB
 1. **Cluster Agent** (Deployment)
    - Collects Kubernetes metadata and metrics
    - Includes kube-state-metrics sidecar
-   - Reports to Coroot at 10.30.0.20:32702
+   - Reports to Coroot at coroot.monit.kernow.io
 
 2. **Node Agent** (DaemonSet)
    - eBPF-based observability
@@ -23,7 +23,7 @@ Deployed via ArgoCD to agentic cluster:
 ## Secret Management
 
 API key stored in Infisical:
-- Path: `/monitoring/coroot`
+- Path: `/observability/coroot`
 - Key: `agentic_apikey`
 - InfisicalSecret creates `coroot-agent-apikey` in `coroot-agent` namespace
 
@@ -41,6 +41,6 @@ export KUBECONFIG=/home/agentic_lab/infrastructure/terraform/talos-cluster/gener
 kubectl get pods -n coroot-agent
 
 # Check Coroot UI
-# Navigate to http://10.30.0.20:32702
+# Navigate to https://coroot.kernow.io
 # Select "agentic-homelab" project
 ```

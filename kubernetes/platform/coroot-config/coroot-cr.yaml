@@ -30,10 +30,9 @@ spec:
   storage:
     size: 10Gi
 
-  # NodePort service (no LoadBalancer due to network isolation)
+  # ClusterIP service - accessed via Traefik ingress
   service:
-    type: NodePort
-    nodePort: 32702
+    type: ClusterIP
 
   resources:
     requests:
@@ -81,7 +80,7 @@ spec:
         - monit-homelab
         - agentic-homelab
       notificationIntegrations:
-        baseURL: "http://10.30.0.20:32702"
+        baseURL: "https://coroot.kernow.io"
         webhook:
           url: "http://10.20.0.40:31105/alerts/event/keep"
           customHeaders:

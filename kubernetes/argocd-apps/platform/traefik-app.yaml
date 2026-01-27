@@ -18,36 +18,36 @@ spec:
         deployment:
           replicas: 1
 
-        # Service configuration - use NodePort for access on 10.30.0.20
+        # Service configuration - LoadBalancer via Cilium L2
         service:
-          type: NodePort
+          type: LoadBalancer
           spec:
-            externalTrafficPolicy: Local
+            loadBalancerIP: "10.30.0.90"
 
         # Ports configuration
         ports:
           web:
             port: 8000
             exposedPort: 80
-            nodePort: 30080
             expose:
               default: true
           websecure:
             port: 8443
             exposedPort: 443
-            nodePort: 30443
             expose:
               default: true
+            tls:
+              enabled: true
           traefik:
             port: 9000
             expose:
-              default: true
+              default: false
 
-        # IngressRoute for dashboard
+        # IngressRoute for dashboard (accessible via traefik.monit.kernow.io)
         ingressRoute:
           dashboard:
             enabled: true
-            matchRule: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+            matchRule: Host(`traefik.monit.kernow.io`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
             entryPoints: ["web"]
 
         # Resource limits

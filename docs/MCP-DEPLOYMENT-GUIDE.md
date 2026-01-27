@@ -1,31 +1,35 @@
 # MCP Servers Deployment Guide
 
-Complete guide to deploy and use MCP servers for homelab infrastructure management.
+> **NOTE**: This guide is LEGACY. MCP servers have been consolidated into 6 domain MCPs
+> running in the **agentic cluster** (ai-platform namespace). See `/home/mcp-servers/` and
+> `/home/agentic_lab/CLAUDE.md` for current architecture.
+>
+> The monitoring cluster no longer hosts MCP servers. Observability services are accessed
+> via Traefik ingress at `*.monit.kernow.io` (e.g., `coroot.monit.kernow.io`).
 
-## Overview
+## Overview (Legacy)
 
-MCP (Model Context Protocol) servers provide Claude Code with direct API access to all infrastructure components. All MCP servers are deployed as pods in the monitoring K3s cluster (10.30.0.20) and exposed via NodePort services.
+MCP (Model Context Protocol) servers provide Claude Code with direct API access to all infrastructure components. MCP servers are now deployed in the agentic cluster and access monitoring services via DNS-based ingress.
 
-## Architecture
+## Current Architecture
 
 ```
-Claude Code (Your Machine)
+Claude Code (IAC Container)
     │
-    ├─ HTTP connections to MCP servers on 10.30.0.20:300XX
+    ├─ HTTP connections to domain MCPs on *.agentic.kernow.io
     │
     ↓
-Monitoring K3s Cluster (10.30.0.20)
-├─ Namespace: mcp-servers
-│   ├─ infisical-mcp (30080) → Infisical API
-│   ├─ coroot-mcp (30081) → Coroot observability
-│   ├─ proxmox-ruapehu-mcp (30082) → Proxmox 10.10.0.10
-│   ├─ proxmox-carrick-mcp (30083) → Proxmox 10.30.0.10
-│   ├─ kubernetes-prod-mcp (30084) → Prod Talos cluster
-│   ├─ kubernetes-monitoring-mcp (30085) → Monitoring K3s cluster
-│   ├─ talos-mcp (30086) → Talos OS nodes
-│   ├─ opnsense-mcp (30087) → OPNsense firewall
-│   ├─ unifi-mcp (30088) → UniFi network
-│   └─ adguard-mcp (30089) → AdGuard DNS
+Agentic Cluster (10.20.0.40) — ai-platform namespace
+├─ observability-mcp → Coroot (coroot.monit.kernow.io)
+│                     → Grafana (grafana.monit.kernow.io)
+│                     → VictoriaMetrics (victoriametrics.monit.kernow.io)
+│                     → AlertManager (alertmanager.monit.kernow.io)
+│                     → Gatus (gatus.monit.kernow.io)
+├─ infrastructure-mcp → Kubernetes, Proxmox, TrueNAS, etc.
+├─ knowledge-mcp → Qdrant, Neo4j, Outline
+├─ home-mcp → Home Assistant, Tasmota, UniFi, AdGuard
+├─ media-mcp → Plex, Sonarr, Radarr, etc.
+└─ external-mcp → SearXNG, GitHub, Reddit, Wikipedia
 ```
 
 ## Prerequisites

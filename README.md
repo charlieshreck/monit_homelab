@@ -1,6 +1,6 @@
-# Monitoring Homelab - K3s on Proxmox Carrick
+# Monitoring Homelab - Talos Linux on Proxmox Carrick
 
-Infrastructure-as-Code for deploying a K3s monitoring cluster using **Terraform → Ansible → ArgoCD** pipeline.
+Infrastructure-as-Code for deploying a Talos Linux monitoring cluster using **Terraform → ArgoCD** pipeline.
 
 ## ⚠️ CRITICAL: GitOps Workflow MANDATORY
 
@@ -15,7 +15,21 @@ Infrastructure-as-Code for deploying a K3s monitoring cluster using **Terraform 
 
 ## Overview
 
-This repository deploys a lightweight K3s Kubernetes cluster in an LXC container for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, Coroot, MCP servers, etc.). The monitoring cluster is isolated from production on a separate Proxmox host and network.
+This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, Coroot, etc.). The monitoring cluster is isolated from production on a separate Proxmox host and network. All services are accessed via Traefik LoadBalancer ingress (10.30.0.90) with DNS-based routing.
+
+### Service Access
+
+| Service | Internal URL | External URL | Purpose |
+|---------|-------------|-------------|---------|
+| Grafana | https://grafana.kernow.io | https://grafana.kernow.io | Dashboards |
+| Coroot | https://coroot.kernow.io | https://coroot.kernow.io | eBPF Observability |
+| Beszel | https://beszel.kernow.io | https://beszel.kernow.io | Host Monitoring |
+| Prometheus | http://prometheus.monit.kernow.io | - | Metrics |
+| AlertManager | http://alertmanager.monit.kernow.io | - | Alerts |
+| VictoriaMetrics | http://victoriametrics.monit.kernow.io | - | TSDB |
+| VictoriaLogs | http://victorialogs.monit.kernow.io | - | Logs |
+| Gatus | http://gatus.monit.kernow.io | - | Health Checks |
+| Traefik | http://traefik.monit.kernow.io | - | Dashboard |
 
 ### Architecture
 

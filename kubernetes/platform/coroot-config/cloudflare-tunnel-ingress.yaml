@@ -12,7 +12,7 @@ metadata:
     gethomepage.dev/description: "eBPF Observability Platform"
     gethomepage.dev/group: "Monitoring"
     gethomepage.dev/icon: "mdi-chart-line"
-    gethomepage.dev/ping: "http://10.30.0.20:32702"
+    gethomepage.dev/ping: "https://coroot.kernow.io"
 spec:
   ingressClassName: cloudflare-tunnel
   rules:
@@ -23,6 +23,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: coroot-nodeport
+                name: coroot-coroot
                 port:
                   number: 8080
