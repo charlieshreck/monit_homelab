@@ -85,7 +85,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: coroot-agent-apikey
-                  key: application_apikey  # From Infisical
+                  key: PROD_API_KEY
             - name: CLUSTER_NAME
               value: "production"
             - name: METRICS_SCRAPE_INTERVAL
@@ -149,7 +149,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: coroot-agent-apikey
-                  key: application_apikey  # From Infisical
+                  key: PROD_API_KEY
             - name: METRICS_ENDPOINT
               value: "http://coroot.monit.kernow.io/v1/metrics"
             - name: LOGS_ENDPOINT
