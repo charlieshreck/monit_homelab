@@ -91,7 +91,7 @@ spec:
               #   metrics_path: '/api2/prometheus'
               #   params:
               #     format: ['prometheus']
-              # NOTE: proxmox-carrick REMOVED - host decommissioned
+              # NOTE: proxmox-carrick scrape REMOVED - not needed, health covered by Gatus
 
               # Production Talos Cluster - Kubelet Metrics (via API server proxy)
               - job_name: 'talos-kubelets'
