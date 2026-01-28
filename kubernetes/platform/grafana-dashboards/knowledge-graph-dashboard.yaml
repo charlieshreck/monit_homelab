@@ -1,0 +1,304 @@
+---
+# Knowledge Graph Health Dashboard
+# Neo4j graph database overview for Kernow homelab
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knowledge-graph-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+    app: kube-prometheus-stack
+data:
+  knowledge-graph.json: |
+    {
+      "annotations": { "list": [] },
+      "description": "Neo4j Knowledge Graph health and overview",
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "title": "Total Nodes",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 0, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) RETURN count(n) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 500 },
+                  { "color": "green", "value": 1000 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 2,
+          "title": "Total Relationships",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 3, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH ()-[r]->() RETURN count(r) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 500 },
+                  { "color": "green", "value": 1000 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 3,
+          "title": "Node Types",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) RETURN count(DISTINCT labels(n)[0]) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "blue", "value": null }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 4,
+          "title": "Orphan Nodes",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 9, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) WHERE NOT (n)--() RETURN count(n) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 10 },
+                  { "color": "red", "value": 50 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 5,
+          "title": "Relationship Types",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 12, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH ()-[r]->() RETURN count(DISTINCT type(r)) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "purple", "value": null }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 6,
+          "title": "Connectivity Score",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 3, "x": 15, "y": 0 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) WITH count(n) AS total OPTIONAL MATCH (m) WHERE (m)--() WITH total, count(DISTINCT m) AS connected RETURN round(100.0 * connected / total) AS value",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "green", "value": 90 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            },
+            "overrides": []
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "value", "graphMode": "none" }
+        },
+        {
+          "id": 10,
+          "title": "Nodes by Type",
+          "type": "barchart",
+          "gridPos": { "h": 8, "w": 9, "x": 0, "y": 4 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) RETURN labels(n)[0] AS type, count(*) AS count ORDER BY count DESC",
+            "format": "table"
+          }],
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+          "options": { "xField": "type", "orientation": "horizontal", "barWidth": 0.8, "showValue": "always" }
+        },
+        {
+          "id": 11,
+          "title": "Relationships by Type",
+          "type": "barchart",
+          "gridPos": { "h": 8, "w": 9, "x": 9, "y": 4 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH ()-[r]->() RETURN type(r) AS rel_type, count(*) AS count ORDER BY count DESC LIMIT 15",
+            "format": "table"
+          }],
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+          "options": { "xField": "rel_type", "orientation": "horizontal", "barWidth": 0.8, "showValue": "always" }
+        },
+        {
+          "id": 20,
+          "title": "Relationship Coverage by Node Type",
+          "type": "table",
+          "gridPos": { "h": 8, "w": 18, "x": 0, "y": 12 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) WITH labels(n)[0] AS type, CASE WHEN (n)--() THEN 1 ELSE 0 END AS connected RETURN type, sum(connected) AS connected, count(*) - sum(connected) AS orphaned, count(*) AS total, round(100.0 * sum(connected) / count(*)) AS pct_connected ORDER BY total DESC",
+            "format": "table"
+          }],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "pct_connected" },
+                "properties": [
+                  { "id": "unit", "value": "percent" },
+                  { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 50 }, { "color": "green", "value": 90 }] } },
+                  { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+                  { "id": "custom.displayMode", "value": "color-background" }
+                ]
+              }
+            ]
+          },
+          "options": { "showHeader": true, "sortBy": [{ "displayName": "total", "desc": true }] }
+        },
+        {
+          "id": 30,
+          "title": "Orphan Nodes (No Relationships)",
+          "type": "table",
+          "gridPos": { "h": 8, "w": 18, "x": 0, "y": 20 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n) WHERE NOT (n)--() RETURN labels(n)[0] AS type, coalesce(n.name, n.ip, n.hostname, n.title, toString(n.vmid), 'unnamed') AS identifier, coalesce(n.ip, '') AS ip, coalesce(n.namespace, '') AS namespace ORDER BY type, identifier LIMIT 50",
+            "format": "table"
+          }],
+          "fieldConfig": { "defaults": {}, "overrides": [] },
+          "options": { "showHeader": true, "sortBy": [{ "displayName": "type", "desc": false }] }
+        },
+        {
+          "id": 40,
+          "title": "Most Connected Nodes (Hubs)",
+          "type": "table",
+          "gridPos": { "h": 8, "w": 9, "x": 0, "y": 28 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n)-[r]-() RETURN labels(n)[0] AS type, coalesce(n.name, n.ip, n.hostname, n.title) AS name, count(r) AS relationships ORDER BY relationships DESC LIMIT 20",
+            "format": "table"
+          }],
+          "fieldConfig": { "defaults": {}, "overrides": [] },
+          "options": { "showHeader": true }
+        },
+        {
+          "id": 41,
+          "title": "Network Distribution",
+          "type": "piechart",
+          "gridPos": { "h": 8, "w": 9, "x": 9, "y": 28 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (n)-[:ON_NETWORK]->(net:Network) RETURN net.name AS network, count(n) AS devices ORDER BY devices DESC",
+            "format": "table"
+          }],
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+          "options": { "pieType": "donut", "legend": { "displayMode": "table", "placement": "right" } }
+        },
+        {
+          "id": 50,
+          "title": "Infrastructure Graph",
+          "type": "nodeGraph",
+          "gridPos": { "h": 10, "w": 18, "x": 0, "y": 36 },
+          "datasource": { "type": "kniepdennis-neo4j-datasource", "uid": "neo4j" },
+          "targets": [{
+            "refId": "A",
+            "cypherQuery": "MATCH (h:Host)-[r]-(connected) RETURN h, r, connected LIMIT 150",
+            "format": "nodegraph"
+          }],
+          "fieldConfig": { "defaults": {}, "overrides": [] },
+          "options": {}
+        }
+      ],
+      "refresh": "5m",
+      "schemaVersion": 39,
+      "tags": ["neo4j", "knowledge-graph"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "timepicker": {},
+      "timezone": "",
+      "title": "Knowledge Graph Health",
+      "uid": "knowledge-graph-health",
+      "version": 1
+    }

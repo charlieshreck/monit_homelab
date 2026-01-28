@@ -204,6 +204,8 @@ spec:
             GF_RENDERING_SERVER_URL: http://grafana-image-renderer.monitoring:8081/render
             GF_RENDERING_CALLBACK_URL: http://kube-prometheus-stack-grafana.monitoring:80/
             GF_LOG_FILTERS: rendering:debug
+            GF_INSTALL_PLUGINS: kniepdennis-neo4j-datasource
+            GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kniepdennis-neo4j-datasource
           persistence:
             enabled: true
             size: 10Gi
@@ -249,6 +251,17 @@ spec:
                   isDefault: false
                   jsonData:
                     maxLines: 1000
+                - name: Neo4j
+                  type: kniepdennis-neo4j-datasource
+                  access: proxy
+                  uid: neo4j
+                  isDefault: false
+                  jsonData:
+                    url: bolt://10.20.0.40:31687
+                    database: neo4j
+                    username: neo4j
+                  secureJsonData:
+                    password: l2872dugQJSqJ3L8SS6JBbGO
           dashboardProviders:
             dashboardproviders.yaml:
               apiVersion: 1
