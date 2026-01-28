@@ -200,11 +200,12 @@ spec:
           # Disable default datasource to avoid conflicts
           defaultDatasourceEnabled: false
           # Standalone image renderer service (deployed separately)
+          plugins:
+            - kniepdennis-neo4j-datasource
           env:
             GF_RENDERING_SERVER_URL: http://grafana-image-renderer.monitoring:8081/render
             GF_RENDERING_CALLBACK_URL: http://kube-prometheus-stack-grafana.monitoring:80/
             GF_LOG_FILTERS: rendering:debug
-            GF_INSTALL_PLUGINS: kniepdennis-neo4j-datasource
             GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: kniepdennis-neo4j-datasource
           persistence:
             enabled: true
