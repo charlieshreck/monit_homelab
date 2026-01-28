@@ -37,9 +37,9 @@ variable "monitoring_gateway" {
 }
 
 variable "dns_servers" {
-  description = "DNS servers"
+  description = "DNS servers (local DNS stack for internal resolution, public fallback)"
   type        = list(string)
-  default     = ["1.1.1.1", "8.8.8.8"]
+  default     = ["10.10.0.1", "1.1.1.1"]
 }
 
 # Cluster Configuration
