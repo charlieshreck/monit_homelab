@@ -182,7 +182,7 @@ data:
 
       - name: TrueNAS Media
         group: Storage
-        url: "https://10.20.0.100:443"
+        url: "https://10.20.0.114:443"
         interval: 120s
         conditions:
           - "[STATUS] == 200"
