@@ -189,16 +189,13 @@ data:
         client:
           insecure: true
 
-      # Network — DNS functional check (detects Port 53 dead)
-      - name: AdGuard DNS Resolution
+      # Network — AdGuard health check (HTTP instead of DNS due to firewall)
+      - name: AdGuard Home
         group: Network
-        url: "10.10.0.1"
-        dns:
-          query-name: "google.com"
-          query-type: "A"
+        url: "http://10.10.0.1:3000"
         interval: 60s
         conditions:
-          - "[DNS_RCODE] == NOERROR"
+          - "[STATUS] == 200"
 
       # AI Platform (Local Inference)
       - name: Ollama (qwen2.5:7b)
