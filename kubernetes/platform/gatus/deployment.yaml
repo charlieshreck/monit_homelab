@@ -385,7 +385,7 @@ data:
         url: "https://tautulli.kernow.io"
         interval: 120s
         conditions:
-          - "[STATUS] any [200, 302, 303]"
+          - "[STATUS] < 400"
 
       - name: Cleanuparr
         group: Media
