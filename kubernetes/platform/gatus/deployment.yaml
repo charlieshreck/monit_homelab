@@ -173,7 +173,7 @@ data:
       # Storage — TrueNAS health checks
       - name: TrueNAS HDD
         group: Storage
-        url: "https://10.10.0.50:443"
+        url: "https://10.20.0.103:443"
         interval: 120s
         conditions:
           - "[STATUS] == 200"
@@ -182,7 +182,7 @@ data:
 
       - name: TrueNAS Media
         group: Storage
-        url: "https://10.10.0.60:443"
+        url: "https://10.20.0.100:443"
         interval: 120s
         conditions:
           - "[STATUS] == 200"
@@ -385,7 +385,7 @@ data:
         url: "https://tautulli.kernow.io"
         interval: 120s
         conditions:
-          - "[STATUS] == 200"
+          - "[STATUS] any [200, 302, 303]"
 
       - name: Cleanuparr
         group: Media
