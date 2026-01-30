@@ -1,18 +1,13 @@
 ---
 # Grafana - User-facing (grafana.kernow.io)
+# Homepage annotations disabled - auto-discovered via prod cluster cloudflare ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: grafana
   namespace: monitoring
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Grafana"
-    gethomepage.dev/description: "Monitoring Dashboards"
-    gethomepage.dev/group: "Monitoring"
-    gethomepage.dev/icon: "grafana"
-    gethomepage.dev/widget.type: "grafana"
-    gethomepage.dev/widget.url: "https://grafana.kernow.io"
+    gethomepage.dev/enabled: "false"
 spec:
   ingressClassName: traefik
   tls:
@@ -112,17 +107,14 @@ spec:
                   number: 9428
 ---
 # Gatus - Internal (gatus.monit.kernow.io)
+# Homepage annotations disabled - auto-discovered via prod cluster cloudflare ingress
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: gatus
   namespace: monitoring
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Gatus"
-    gethomepage.dev/description: "Endpoint Health Monitoring"
-    gethomepage.dev/group: "Monitoring"
-    gethomepage.dev/icon: "gatus"
+    gethomepage.dev/enabled: "false"
 spec:
   ingressClassName: traefik
   rules:
@@ -138,17 +130,14 @@ spec:
                   number: 8080
 ---
 # Beszel - User-facing (beszel.kernow.io)
+# Homepage annotations disabled - configured manually in prod cluster services.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: beszel
   namespace: monitoring
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Beszel"
-    gethomepage.dev/description: "Host Monitoring"
-    gethomepage.dev/group: "Monitoring"
-    gethomepage.dev/icon: "mdi-server"
+    gethomepage.dev/enabled: "false"
 spec:
   ingressClassName: traefik
   tls:
