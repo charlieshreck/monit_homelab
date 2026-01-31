@@ -161,6 +161,13 @@ data "talos_machine_configuration" "monitoring_node" {
       }
 
       machine = {
+        # Enable virtio_balloon for memory ballooning support
+        kernel = {
+          modules = [
+            { name = "virtio_balloon" }
+          ]
+        }
+
         network = {
           hostname = local.node_config.name
           interfaces = [

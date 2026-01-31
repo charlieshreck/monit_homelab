@@ -90,7 +90,7 @@ variable "monitoring_node" {
     name   = "talos-monitor"
     ip     = "10.30.0.20"
     cores  = 4
-    memory = 12288 # 12GB - available on Carrick
+    memory = 10240 # 10GB - reduced to fit 11GB Carrick host with ballooning
     disk   = 50
   }
 }
