@@ -48,6 +48,7 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
 
   memory {
     dedicated = local.node_config.memory
+    floating  = 6144  # Balloon minimum 6GB for monitoring node
   }
 
   bios = "ovmf"
