@@ -1,14 +1,13 @@
 provider "proxmox" {
-  alias    = "monitoring"
-  endpoint = "https://${var.monitoring_proxmox_host}:8006"
-  username = var.monitoring_proxmox_user
-  password = var.monitoring_proxmox_password
-  insecure = true
+  alias     = "monitoring"
+  endpoint  = "https://${var.monitoring_proxmox_host}:8006"
+  api_token = "${var.monitoring_proxmox_token_id}=${var.monitoring_proxmox_token_secret}"
+  insecure  = true
 
   ssh {
     agent    = false
     username = "root"
-    password = var.monitoring_proxmox_password
+    password = var.monitoring_proxmox_ssh_password
   }
 }
 

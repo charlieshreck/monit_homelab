@@ -5,14 +5,20 @@ variable "monitoring_proxmox_host" {
   default     = "10.10.0.20"
 }
 
-variable "monitoring_proxmox_user" {
-  description = "Proxmox API user"
+variable "monitoring_proxmox_token_id" {
+  description = "Proxmox API token ID (e.g., root@pam!terraform)"
   type        = string
-  default     = "root@pam"
+  sensitive   = true
 }
 
-variable "monitoring_proxmox_password" {
-  description = "Proxmox password"
+variable "monitoring_proxmox_token_secret" {
+  description = "Proxmox API token secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "monitoring_proxmox_ssh_password" {
+  description = "Proxmox SSH password (for ISO uploads)"
   type        = string
   sensitive   = true
 }

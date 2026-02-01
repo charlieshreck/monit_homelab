@@ -62,3 +62,6 @@
 # Generated files
 **/generated/
 **/output/
+# Terraform plan files
+*.tfplan
+tfplan
