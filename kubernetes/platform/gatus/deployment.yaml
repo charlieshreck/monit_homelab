@@ -171,6 +171,15 @@ data:
           - "[STATUS] == 200"
 
       # Storage — TrueNAS health checks
+      - name: PBS (Backup Server)
+        group: Infrastructure
+        url: "https://10.10.0.151:8007"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+        client:
+          insecure: true
+
       - name: TrueNAS HDD
         group: Storage
         url: "https://10.20.0.103:443"

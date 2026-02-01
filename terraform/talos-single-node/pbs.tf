@@ -1,16 +1,13 @@
 # ============================================================================
-# Proxmox Backup Server (PBS) LXC Container
+# Proxmox Backup Server (PBS) VM
 # ============================================================================
 # PBS provides VM/LXC snapshot-level backups as a disaster recovery layer.
 # Running on Pihanga allows backing up Ruapehu VMs from a separate host.
 #
-# NOTE: After creation, configure the datastore to use TrueNAS-HDD NFS:
-#   1. Add NFS storage to Pihanga: Datacenter → Storage → Add → NFS
-#      - ID: truenas-pbs
-#      - Server: 10.20.0.103
-#      - Export: /mnt/Taupo/pbs
-#      - Content: VZDump backup file
-#   2. In PBS UI: Add datastore pointing to /mnt/truenas-pbs
+# NOTE: PBS installation is interactive. After terraform apply:
+#   1. Open VM console in Proxmox UI
+#   2. Complete PBS installer (set root password, email, etc.)
+#   3. Configure datastore to use NFS mount
 # ============================================================================
 
 locals {
@@ -20,149 +17,83 @@ locals {
     ip     = "10.10.0.151"
     cores  = 2
     memory = 2048  # 2GB RAM
-    swap   = 512
-    disk   = 32    # 32GB root disk (for PBS system + local cache)
+    disk   = 32    # 32GB boot disk
   }
 }
 
-# Download Debian template for PBS
-resource "proxmox_virtual_environment_download_file" "pbs_template" {
+# Download official PBS ISO
+resource "proxmox_virtual_environment_download_file" "pbs_iso" {
   provider     = proxmox.monitoring
-  content_type = "vztmpl"
+  content_type = "iso"
   datastore_id = "local"
   node_name    = var.monitoring_proxmox_node
 
-  url       = "http://download.proxmox.com/images/system/debian-12-standard_12.7-1_amd64.tar.zst"
-  file_name = "debian-12-standard_12.7-1_amd64.tar.zst"
+  url       = "https://enterprise.proxmox.com/iso/proxmox-backup-server_4.1-1.iso"
+  file_name = "proxmox-backup-server_4.1-1.iso"
 
   overwrite           = false
   overwrite_unmanaged = true
 }
 
-# PBS LXC Container
-resource "proxmox_virtual_environment_container" "pbs" {
+# PBS VM
+resource "proxmox_virtual_environment_vm" "pbs" {
   provider    = proxmox.monitoring
+  name        = local.pbs_config.name
+  description = "Proxmox Backup Server - DR backups for Ruapehu VMs"
   node_name   = var.monitoring_proxmox_node
   vm_id       = local.pbs_config.vmid
-  description = "Proxmox Backup Server - DR backups for Ruapehu VMs"
-
-  initialization {
-    hostname = local.pbs_config.name
-
-    ip_config {
-      ipv4 {
-        address = "${local.pbs_config.ip}/24"
-        gateway = var.monitoring_gateway
-      }
-    }
-
-    dns {
-      servers = var.dns_servers
-    }
-
-    user_account {
-      keys     = []
-      password = var.monitoring_proxmox_ssh_password  # Initial root password
-    }
-  }
 
   cpu {
     cores = local.pbs_config.cores
+    type  = "host"
   }
 
   memory {
     dedicated = local.pbs_config.memory
-    swap      = local.pbs_config.swap
   }
 
+  # Boot disk
   disk {
     datastore_id = var.monitoring_proxmox_storage
+    interface    = "scsi0"
     size         = local.pbs_config.disk
+    file_format  = "raw"
+    ssd          = true
+    discard      = "on"
   }
 
-  network_interface {
-    name   = "eth0"
+  # Network
+  network_device {
     bridge = var.network_bridge
+    model  = "virtio"
   }
+
+  # PBS ISO for installation
+  cdrom {
+    file_id   = proxmox_virtual_environment_download_file.pbs_iso.id
+    interface = "ide2"
+  }
+
+  # BIOS settings
+  bios = "seabios"
 
   operating_system {
-    template_file_id = proxmox_virtual_environment_download_file.pbs_template.id
-    type             = "debian"
+    type = "l26"
   }
 
-  features {
-    nesting = true
-  }
+  # Start VM for installation
+  on_boot = true
+  started = true
 
-  start_on_boot = true
-  started       = true
-  unprivileged  = false  # Privileged for NFS mount access
-
+  # Ignore CD-ROM changes after initial install
   lifecycle {
     ignore_changes = [
-      initialization,
+      cdrom,
     ]
   }
 
   depends_on = [
-    proxmox_virtual_environment_download_file.pbs_template,
-  ]
-}
-
-# Install PBS in the container
-resource "null_resource" "pbs_install" {
-  provisioner "remote-exec" {
-    inline = [
-      "#!/bin/bash",
-      "set -e",
-      "",
-      "echo 'Waiting for container to be ready...'",
-      "sleep 15",
-      "",
-      "echo 'Installing PBS in container ${local.pbs_config.vmid}...'",
-      "pct exec ${local.pbs_config.vmid} -- bash -c '",
-      "  set -e",
-      "  ",
-      "  # Add Proxmox PBS repository",
-      "  echo \"deb http://download.proxmox.com/debian/pbs bookworm pbs-no-subscription\" > /etc/apt/sources.list.d/pbs.list",
-      "  ",
-      "  # Add Proxmox GPG key",
-      "  apt-get update",
-      "  apt-get install -y wget gnupg",
-      "  wget -q https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg -O /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg",
-      "  ",
-      "  # Update and install PBS + NFS",
-      "  apt-get update",
-      "  DEBIAN_FRONTEND=noninteractive apt-get install -y proxmox-backup-server nfs-common",
-      "  ",
-      "  # Create mount point for NFS datastore",
-      "  mkdir -p /mnt/pbs-datastore",
-      "  ",
-      "  # Add NFS mount to fstab (will be mounted manually or on reboot)",
-      "  echo \"10.20.0.103:/mnt/Taupo/pbs /mnt/pbs-datastore nfs defaults,_netdev 0 0\" >> /etc/fstab",
-      "  ",
-      "  # Try to mount NFS",
-      "  mount /mnt/pbs-datastore || echo \"NFS mount failed - configure manually if needed\"",
-      "  ",
-      "  # Enable and start PBS services",
-      "  systemctl enable proxmox-backup-proxy proxmox-backup",
-      "  systemctl start proxmox-backup-proxy proxmox-backup",
-      "  ",
-      "  echo \"PBS installation complete!\"",
-      "  echo \"Access PBS at: https://${local.pbs_config.ip}:8007\"",
-      "'",
-    ]
-
-    connection {
-      type     = "ssh"
-      user     = "root"
-      password = var.monitoring_proxmox_ssh_password
-      host     = var.monitoring_proxmox_host
-    }
-  }
-
-  depends_on = [
-    proxmox_virtual_environment_container.pbs,
+    proxmox_virtual_environment_download_file.pbs_iso,
   ]
 }
 
@@ -170,43 +101,64 @@ resource "null_resource" "pbs_install" {
 # Outputs
 # ============================================================================
 
+output "pbs_vmid" {
+  description = "PBS VM ID"
+  value       = local.pbs_config.vmid
+}
+
 output "pbs_ip" {
-  description = "PBS server IP address"
+  description = "PBS server IP address (configure during install)"
   value       = local.pbs_config.ip
 }
 
 output "pbs_web_ui" {
-  description = "PBS Web UI URL"
+  description = "PBS Web UI URL (after installation)"
   value       = "https://${local.pbs_config.ip}:8007"
 }
 
-output "pbs_post_install_steps" {
-  description = "Steps to complete PBS setup"
+output "pbs_install_steps" {
+  description = "PBS installation steps"
   value       = <<-EOT
-    PBS Post-Installation Steps:
+    PBS Installation Steps:
 
-    1. Access PBS UI: https://${local.pbs_config.ip}:8007
-       - Login: root (password from terraform.tfvars)
+    1. Open Pihanga Proxmox UI → VM 101 → Console
 
-    2. Create datastore in PBS:
-       - Administration → Storage/Disks → Directory
-       - Add: /mnt/pbs-datastore
-       - Name: pbs-datastore
+    2. Complete PBS installer:
+       - Accept EULA
+       - Select target disk (local disk)
+       - Country/Timezone
+       - Password: (your choice)
+       - Email: (your email)
+       - Network:
+         - IP: ${local.pbs_config.ip}/24
+         - Gateway: ${var.monitoring_gateway}
+         - DNS: 10.10.0.1
+       - Install
 
-    3. Add Ruapehu as remote (to backup its VMs):
-       - On Ruapehu Proxmox UI: Datacenter → Storage → Add → PBS
-         - ID: pbs-pihanga
-         - Server: ${local.pbs_config.ip}
-         - Datastore: pbs-datastore
-         - Username: root@pam
-         - Fingerprint: (get from PBS UI)
+    3. After reboot, access: https://${local.pbs_config.ip}:8007
+       - Login: root
 
-    4. Create backup schedule on Ruapehu:
+    4. Add NFS datastore:
+       - SSH to PBS: ssh root@${local.pbs_config.ip}
+       - mkdir -p /mnt/pbs-datastore
+       - echo "10.20.0.103:/mnt/Taupo/pbs /mnt/pbs-datastore nfs defaults,_netdev 0 0" >> /etc/fstab
+       - mount -a
+       - In PBS UI: Administration → Storage → Add Directory
+         - Name: pbs-datastore
+         - Path: /mnt/pbs-datastore
+
+    5. Add PBS storage to Ruapehu:
+       - Ruapehu UI → Datacenter → Storage → Add → PBS
+       - ID: pbs-pihanga
+       - Server: ${local.pbs_config.ip}
+       - Datastore: pbs-datastore
+       - Username: root@pam
+       - Get fingerprint from PBS Dashboard
+
+    6. Create backup jobs on Ruapehu:
        - Datacenter → Backup → Add
        - Storage: pbs-pihanga
-       - VMs: 100 (IAC), 450 (Plex), 451 (UniFi)
-       - Schedule: Sunday 02:00
-
-    5. (Optional) Decommission old PBS on Ruapehu (VM 101)
+       - VMs: 100, 450, 451
+       - Schedule: sun 02:00
   EOT
 }
