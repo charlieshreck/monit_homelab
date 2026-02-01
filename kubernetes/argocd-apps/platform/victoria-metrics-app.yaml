@@ -51,7 +51,7 @@ spec:
           enabled: false
 
   destination:
-    server: https://10.30.0.20:6443
+    server: https://10.10.0.30:6443
     namespace: monitoring
 
   syncPolicy:

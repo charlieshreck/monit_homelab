@@ -163,7 +163,7 @@ spec:
                   insecure_skip_verify: true
                 bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
                 static_configs:
-                  - targets: ['10.30.0.20:10250']
+                  - targets: ['10.10.0.30:10250']
                     labels:
                       cluster: 'monitoring'
                 metrics_path: '/metrics'
@@ -434,7 +434,7 @@ spec:
             k8s: true
 
   destination:
-    server: https://10.30.0.20:6443
+    server: https://10.10.0.30:6443
     namespace: monitoring
 
   syncPolicy:

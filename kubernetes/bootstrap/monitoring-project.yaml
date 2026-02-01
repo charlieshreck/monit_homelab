@@ -22,7 +22,7 @@ spec:
   # Allowed deployment destinations
   destinations:
     # Monitoring cluster (all namespaces)
-    - server: https://10.30.0.20:6443
+    - server: https://10.10.0.30:6443
       namespace: '*'
 
     # Production cluster (in-cluster address)

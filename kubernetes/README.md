@@ -1,6 +1,6 @@
 # Monitoring Stack - Kubernetes Manifests
 
-Kubernetes manifests for the monitoring infrastructure deployed on the Talos Linux cluster at 10.30.0.20.
+Kubernetes manifests for the monitoring infrastructure deployed on the Talos Linux cluster at 10.10.0.30.
 
 ## Architecture
 
@@ -11,7 +11,7 @@ Kubernetes manifests for the monitoring infrastructure deployed on the Talos Lin
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│ Monitoring Talos Cluster (10.30.0.20)                           │
+│ Monitoring Talos Cluster (10.10.0.30)                           │
 │ Talos Linux v1.11.5 + Kubernetes v1.34.1 + Cilium              │
 │ ┌─────────────────────────────────────────────────────────────┐ │
 │ │ Namespace: monitoring                                       │ │
@@ -62,10 +62,10 @@ kubernetes/
 
 ### Prerequisites
 
-1. **Talos cluster running** at 10.30.0.20 (deployed via Terraform)
+1. **Talos cluster running** at 10.10.0.30 (deployed via Terraform)
 2. **TrueNAS NFS exports** configured:
-   - `/mnt/Restormal/victoria-metrics` accessible from 10.30.0.20
-   - `/mnt/Trelawney/victoria-logs` accessible from 10.30.0.20
+   - `/mnt/Restormal/victoria-metrics` accessible from 10.10.0.30
+   - `/mnt/Trelawney/victoria-logs` accessible from 10.10.0.30
 3. **Production ArgoCD** accessible (on production cluster)
 4. **Git repository** pushed to GitHub
 
@@ -86,7 +86,7 @@ chmod 777 /mnt/Trelawney/victoria-logs
 # Configure NFS exports in TrueNAS UI:
 # Sharing → NFS → Add
 # Path: /mnt/Restormal/victoria-metrics
-# Networks: 10.30.0.20/32
+# Networks: 10.10.0.30/32
 # Maproot User: root
 # Maproot Group: root
 # Repeat for Trelawney
@@ -100,8 +100,8 @@ chmod 777 /mnt/Trelawney/victoria-logs
 # Test NFS from a machine that has nfs-common installed:
 showmount -e 10.30.0.120
 # Should show:
-#   /mnt/Restormal/victoria-metrics 10.30.0.20
-#   /mnt/Trelawney/victoria-logs 10.30.0.20
+#   /mnt/Restormal/victoria-metrics 10.10.0.30
+#   /mnt/Trelawney/victoria-logs 10.10.0.30
 ```
 
 ### Step 3: Push to GitHub
@@ -222,7 +222,7 @@ Prometheus is configured to scrape:
 |--------|---------|---------|-------|
 | **Proxmox Ruapehu** | 10.10.0.10:8006 | Proxmox VE metrics | Production hypervisor |
 | **Proxmox Carrick** | 10.30.0.10:8006 | Proxmox VE metrics | Monitoring hypervisor |
-| **Talos Monitor** | 10.30.0.20:10250 | Kubelet metrics | Monitoring cluster node |
+| **Talos Monitor** | 10.10.0.30:10250 | Kubelet metrics | Monitoring cluster node |
 | **Talos Cluster** | 10.10.0.40-43 | Kubernetes metrics | Production cluster nodes |
 
 ## Storage Details

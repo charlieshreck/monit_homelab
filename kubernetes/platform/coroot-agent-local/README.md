@@ -42,6 +42,6 @@ API key must exist in Infisical:
 ## Deployment
 
 Managed by ArgoCD application: `coroot-agent-local` (sync-wave: 3)
-- Deploys to monitoring cluster (`https://10.30.0.20:6443`)
+- Deploys to monitoring cluster (`https://10.10.0.30:6443`)
 - Creates namespace: `coroot-agent`
 - Syncs API key from Infisical every 60 seconds
