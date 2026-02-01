@@ -1,8 +1,8 @@
-# Proxmox Connection (Carrick - Monitoring Host)
+# Proxmox Connection (Pihanga - Monitoring + Backup Host)
 variable "monitoring_proxmox_host" {
-  description = "Monitoring Proxmox host address (Carrick)"
+  description = "Monitoring Proxmox host address (Pihanga)"
   type        = string
-  default     = "10.30.0.10"
+  default     = "10.10.0.20"
 }
 
 variable "monitoring_proxmox_user" {
@@ -20,7 +20,7 @@ variable "monitoring_proxmox_password" {
 variable "monitoring_proxmox_node" {
   description = "Proxmox node name"
   type        = string
-  default     = "Carrick"
+  default     = "Pihanga"
 }
 
 # Network Configuration
@@ -31,9 +31,9 @@ variable "network_bridge" {
 }
 
 variable "monitoring_gateway" {
-  description = "Monitoring network gateway"
+  description = "Monitoring network gateway (prod network temporarily)"
   type        = string
-  default     = "10.30.0.1"
+  default     = "10.10.0.1"
 }
 
 variable "dns_servers" {
@@ -63,9 +63,9 @@ variable "kubernetes_version" {
 
 # Storage Configuration
 variable "monitoring_proxmox_storage" {
-  description = "Proxmox storage pool for boot disk (Kerrier ZFS pool)"
+  description = "Proxmox storage pool for boot disk (Mauao ZFS pool on Pihanga)"
   type        = string
-  default     = "Kerrier"
+  default     = "Mauao"
 }
 
 variable "proxmox_iso_storage" {
@@ -88,24 +88,24 @@ variable "monitoring_node" {
   default = {
     vmid   = 200
     name   = "talos-monitor"
-    ip     = "10.30.0.20"
-    cores  = 4
-    memory = 10240 # 10GB - reduced to fit 11GB Carrick host with ballooning
+    ip     = "10.10.0.30"
+    cores  = 6          # Pihanga has 6C/12T
+    memory = 20480      # 20GB - Pihanga has 28GB total
     disk   = 50
   }
 }
 
 # Cilium LoadBalancer Configuration
 variable "cilium_lb_ip_pool" {
-  description = "IP pool for Cilium LoadBalancer"
+  description = "IP pool for Cilium LoadBalancer (prod network - verified free range)"
   type = list(object({
     start = string
     stop  = string
   }))
   default = [
     {
-      start = "10.30.0.90"
-      stop  = "10.30.0.99"
+      start = "10.10.0.31"
+      stop  = "10.10.0.35"
     }
   ]
 }

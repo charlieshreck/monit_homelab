@@ -2,7 +2,7 @@
 # Talos Single-Node Monitoring Cluster
 # ============================================================================
 # Single control-plane node with allowSchedulingOnControlPlanes=true
-# Deployed on Proxmox Carrick (10.30.0.10)
+# Deployed on Proxmox Pihanga (10.10.0.20) - Ryzen 5 7640HS, 28GB RAM
 # ============================================================================
 
 # Generate custom Talos image schematic ID with extensions
@@ -48,7 +48,7 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
 
   memory {
     dedicated = local.node_config.memory
-    floating  = 6144  # Balloon minimum 6GB for monitoring node
+    floating  = 0  # Disable balloon - single node needs stable memory
   }
 
   bios = "ovmf"
@@ -66,7 +66,7 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
     model       = "virtio"
   }
 
-  # Boot disk on Kerrier ZFS pool
+  # Boot disk on Mauao ZFS pool (500GB P310 SSD)
   disk {
     datastore_id = var.monitoring_proxmox_storage
     interface    = "scsi0"
@@ -76,11 +76,12 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
     discard      = "on"
   }
 
-  # Data disk for monitoring storage (monitoring-storage ZFS pool - 1.13TB available)
+  # Data disk for monitoring storage (Mauao ZFS pool - shared with boot disk)
+  # Pihanga has a single 500GB NVMe, so data disk is on same pool
   disk {
-    datastore_id = "monitoring-storage"
+    datastore_id = var.monitoring_proxmox_storage
     interface    = "scsi1"
-    size         = 1000  # 1TB for Victoria metrics/logs data
+    size         = 200  # 200GB for VictoriaMetrics/Logs (Pihanga has 500GB total)
     file_format  = "raw"
     ssd          = true
     discard      = "on"
