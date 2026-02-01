@@ -9,12 +9,12 @@
 | **Type** | Single-node control-plane VM |
 | **Hostname** | talos-monitor |
 | **VMID** | 200 |
-| **IP** | 10.30.0.20 |
-| **Network** | 10.30.0.0/24 (Monitoring) |
-| **Proxmox Host** | Carrick (10.30.0.10) |
+| **IP** | 10.10.0.30 |
+| **Network** | 10.10.0.0/24 (Production) |
+| **Proxmox Host** | Pihanga (10.10.0.101) |
 | **CNI** | Cilium |
-| **LB IP Pool** | 10.30.0.90-99 (Cilium) |
-| **Storage** | Kerrier ZFS pool (boot) + NFS from TrueNAS (data) |
+| **LB IP Pool** | 10.10.0.31-35 (Cilium) |
+| **Storage** | Local SSD (boot) + NFS from TrueNAS-HDD (data) |
 
 **IMPORTANT**: This is a Talos Linux VM, NOT K3s, NOT an LXC container. Talos is immutable - there is no SSH access, no apt-get, no systemd. Use `talosctl` for node operations.
 
@@ -24,15 +24,15 @@
 # Kubeconfig
 export KUBECONFIG=/home/monit_homelab/kubeconfig
 
-# Talosctl (no talosconfig generated in this repo - use terraform output)
-talosctl --nodes 10.30.0.20 --talosconfig <path> health
+# Talosctl
+talosctl --nodes 10.10.0.30 --talosconfig ./terraform/talos-single-node/generated/talosconfig health
 ```
 
 ## Infrastructure (Terraform)
 
 Active Terraform configuration:
 ```
-terraform/talos-single-node/    # ACTIVE - Talos VM on Proxmox Carrick
+terraform/talos-single-node/    # ACTIVE - Talos VM on Proxmox Pihanga
 ├── main.tf                     # VM + Talos bootstrap
 ├── variables.tf                # Cluster config (versions, resources)
 ├── providers.tf                # Proxmox + Talos providers
@@ -82,17 +82,17 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 
 | Resource | IP | Purpose |
 |----------|-----|---------|
-| Carrick (Proxmox) | 10.30.0.10 | Hypervisor (proxmox.monit.kernow.io) |
-| Gateway | 10.30.0.1 | Network gateway |
-| talos-monitor | 10.30.0.20 | Monitoring cluster node |
-| Traefik LB | 10.30.0.90 | Ingress load balancer (Cilium) |
-| TrueNAS-M | 10.30.0.120 | NFS storage |
+| Pihanga (Proxmox) | 10.10.0.101 | Hypervisor |
+| Gateway | 10.10.0.1 | Network gateway (OPNsense) |
+| talos-monitor | 10.10.0.30 | Monitoring cluster node |
+| Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IP range |
+| TrueNAS-HDD | 10.20.0.103 | NFS storage (agentic network) |
 
 ## Storage
 
-NFS from TrueNAS (10.30.0.120):
-- `/mnt/Restormal/victoria-metrics` (200GB) - VictoriaMetrics TSDB
-- `/mnt/Trelawney/victoria-logs` (500GB) - VictoriaLogs
+NFS from TrueNAS-HDD (10.20.0.103) - Tekapo RAIDZ1 pool (5x 500GB EVOs):
+- `/mnt/Tekapo/victoria-metrics` (500Gi) - VictoriaMetrics TSDB
+- `/mnt/Tekapo/victoria-logs` (1000Gi) - VictoriaLogs
 
 ## GitOps Workflow
 
@@ -117,8 +117,9 @@ Terraform changes:
 ## Common Mistakes to Avoid
 
 - Do NOT refer to this as K3s - it was migrated to Talos
-- Do NOT SSH to 10.30.0.20 - Talos has no SSH
+- Do NOT SSH to 10.10.0.30 - Talos has no SSH
 - Do NOT use `apt-get`, `systemctl`, or other Linux admin commands - Talos is immutable
 - Do NOT reference `/etc/rancher/k3s/` paths - K3s is not installed
 - Do NOT use `ansible/` or `terraform/lxc-only/` - these are legacy from the K3s era
 - Do NOT reference VMID 200 as an LXC - it is a VM
+- Do NOT reference old Carrick/10.30.0.0/24 network - cluster migrated to Pihanga

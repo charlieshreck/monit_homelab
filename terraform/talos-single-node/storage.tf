@@ -264,9 +264,76 @@ resource "kubernetes_secret" "production_cluster_credentials" {
 }
 
 # ============================================================================
+# NFS Storage from TrueNAS-HDD (Tekapo pool)
+# ============================================================================
+# Victoria metrics/logs use NFS from TrueNAS-HDD at 10.20.0.103
+# Datasets created on Tekapo RAIDZ1 pool (5x 500GB EVOs = ~2TB usable)
+
+locals {
+  truenas_hdd_ip = "10.20.0.103"
+}
+
+# NFS PV for VictoriaMetrics
+resource "kubernetes_persistent_volume" "victoria_metrics_nfs" {
+  metadata {
+    name = "victoria-metrics-nfs-pv"
+  }
+
+  spec {
+    capacity = {
+      storage = "500Gi"
+    }
+    access_modes = ["ReadWriteOnce"]
+    persistent_volume_reclaim_policy = "Retain"
+    storage_class_name = "nfs"
+
+    persistent_volume_source {
+      nfs {
+        server = local.truenas_hdd_ip
+        path   = "/mnt/Tekapo/victoria-metrics"
+      }
+    }
+  }
+}
+
+# NFS PV for VictoriaLogs
+resource "kubernetes_persistent_volume" "victoria_logs_nfs" {
+  metadata {
+    name = "victoria-logs-nfs-pv"
+  }
+
+  spec {
+    capacity = {
+      storage = "1000Gi"
+    }
+    access_modes = ["ReadWriteOnce"]
+    persistent_volume_reclaim_policy = "Retain"
+    storage_class_name = "nfs"
+
+    persistent_volume_source {
+      nfs {
+        server = local.truenas_hdd_ip
+        path   = "/mnt/Tekapo/victoria-logs"
+      }
+    }
+  }
+}
+
+# NFS Storage Class (manual binding)
+resource "kubernetes_storage_class" "nfs" {
+  metadata {
+    name = "nfs"
+  }
+
+  storage_provisioner = "kubernetes.io/no-provisioner"
+  reclaim_policy      = "Retain"
+  volume_binding_mode = "Immediate"
+}
+
+# ============================================================================
 # PVCs for VictoriaMetrics and VictoriaLogs
 # ============================================================================
-# Pre-create PVCs for Victoria stack to use monitoring-storage ZFS pool
+# Bound to NFS PVs on TrueNAS-HDD Tekapo pool
 
 resource "kubernetes_persistent_volume_claim" "victoria_metrics" {
   metadata {
@@ -278,18 +345,18 @@ resource "kubernetes_persistent_volume_claim" "victoria_metrics" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "200Gi"
+        storage = "500Gi"
       }
     }
-    storage_class_name = "local-path"
+    storage_class_name = "nfs"
+    volume_name        = kubernetes_persistent_volume.victoria_metrics_nfs.metadata[0].name
   }
 
   wait_until_bound = false
 
   depends_on = [
     kubernetes_namespace.monitoring,
-    kubernetes_storage_class.local_path,
-    kubernetes_deployment.local_path_provisioner,
+    kubernetes_persistent_volume.victoria_metrics_nfs,
   ]
 }
 
@@ -303,18 +370,18 @@ resource "kubernetes_persistent_volume_claim" "victoria_logs" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "350Gi"  # Reduced from 500Gi to free space for Coroot
+        storage = "1000Gi"
       }
     }
-    storage_class_name = "local-path"
+    storage_class_name = "nfs"
+    volume_name        = kubernetes_persistent_volume.victoria_logs_nfs.metadata[0].name
   }
 
   wait_until_bound = false
 
   depends_on = [
     kubernetes_namespace.monitoring,
-    kubernetes_storage_class.local_path,
-    kubernetes_deployment.local_path_provisioner,
+    kubernetes_persistent_volume.victoria_logs_nfs,
   ]
 }
 
