@@ -16,6 +16,7 @@ data:
         {
           "id": "garage-s3",
           "uri": "s3:http://10.20.0.103:30188/backrest",
+          "guid": "ca2231ad6f43e4f64124d4abcde0774e9b1eeca5dea0c9afbafc76277b8df146",
           "password": "0kbiHiNLqevgMpWAb1y8yMR3vy6qmWuCiTu/5hiVpEwA2s5j",
           "prunePolicy": {
             "schedule": {
@@ -87,7 +88,7 @@ data:
           "paths": ["/home", "/root", "/etc"],
           "excludes": ["/root/.cache", "/home/*/.cache", "/root/.local/share/nvim"],
           "schedule": {
-            "cron": "0 3 30 * * *",
+            "cron": "30 3 * * *",
             "clock": "CLOCK_LOCAL"
           },
           "retention": {
@@ -126,7 +127,7 @@ data:
           "paths": ["/etc", "/root"],
           "excludes": ["/root/.cache"],
           "schedule": {
-            "cron": "0 3 45 * * *",
+            "cron": "45 3 * * *",
             "clock": "CLOCK_LOCAL"
           },
           "retention": {
