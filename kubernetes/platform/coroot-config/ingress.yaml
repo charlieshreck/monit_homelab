@@ -12,7 +12,7 @@ metadata:
     gethomepage.dev/group: "Monitoring"
     gethomepage.dev/icon: "mdi-chart-line"
 spec:
-  ingressClassName: traefik
+  ingressClassName: traefik-monit
   tls:
     - hosts:
         - coroot.kernow.io
@@ -36,7 +36,7 @@ metadata:
   name: coroot-internal
   namespace: coroot
 spec:
-  ingressClassName: traefik
+  ingressClassName: traefik-monit
   rules:
     - host: coroot.monit.kernow.io
       http:
