@@ -1,0 +1,194 @@
+---
+# Initial Backrest configuration ConfigMap
+# This is used to bootstrap the config on first run
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backrest-initial-config
+  namespace: backrest
+data:
+  config.json: |
+    {
+      "modno": 1,
+      "version": 4,
+      "instance": "kernow-backup-monit",
+      "repos": [
+        {
+          "id": "garage-s3",
+          "uri": "s3:http://10.20.0.103:30188/backrest",
+          "password": "0kbiHiNLqevgMpWAb1y8yMR3vy6qmWuCiTu/5hiVpEwA2s5j",
+          "prunePolicy": {
+            "schedule": {
+              "cron": "0 0 1 * *",
+              "clock": "CLOCK_LAST_RUN_TIME"
+            },
+            "maxUnusedPercent": 10
+          },
+          "checkPolicy": {
+            "schedule": {
+              "cron": "0 0 1 * *",
+              "clock": "CLOCK_LAST_RUN_TIME"
+            }
+          },
+          "autoUnlock": true,
+          "commandPrefix": {}
+        }
+      ],
+      "plans": [
+        {
+          "id": "plex-daily",
+          "repo": "garage-s3",
+          "paths": [
+            "/opt/plex/config/Library/Application Support/Plex Media Server",
+            "/opt/plex/compose"
+          ],
+          "excludes": [
+            "/opt/plex/config/Library/Application Support/Plex Media Server/Cache",
+            "/opt/plex/config/Library/Application Support/Plex Media Server/Logs"
+          ],
+          "schedule": {
+            "cron": "0 4 * * *",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "daily": 7,
+              "weekly": 4
+            }
+          },
+          "backupFlags": ["--tag", "plex"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.50"]
+          }
+        },
+        {
+          "id": "iac-daily",
+          "repo": "garage-s3",
+          "paths": ["/home", "/root", "/etc"],
+          "excludes": ["/root/.cache", "/home/*/.cache", "/root/.local/share/nvim"],
+          "schedule": {
+            "cron": "0 3 * * *",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "daily": 14,
+              "weekly": 4
+            }
+          },
+          "backupFlags": ["--tag", "iac"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.175"]
+          }
+        },
+        {
+          "id": "synapse-daily",
+          "repo": "garage-s3",
+          "paths": ["/home", "/root", "/etc"],
+          "excludes": ["/root/.cache", "/home/*/.cache", "/root/.local/share/nvim"],
+          "schedule": {
+            "cron": "0 3 30 * * *",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "daily": 14,
+              "weekly": 4
+            }
+          },
+          "backupFlags": ["--tag", "synapse"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.22"]
+          }
+        },
+        {
+          "id": "truenas-hdd-weekly",
+          "repo": "garage-s3",
+          "paths": ["/root"],
+          "schedule": {
+            "cron": "0 6 * * 0",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "weekly": 4,
+              "monthly": 2
+            }
+          },
+          "backupFlags": ["--tag", "truenas-hdd"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.20.0.103"]
+          }
+        },
+        {
+          "id": "pdm-daily",
+          "repo": "garage-s3",
+          "paths": ["/etc", "/root"],
+          "excludes": ["/root/.cache"],
+          "schedule": {
+            "cron": "0 3 45 * * *",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "daily": 7,
+              "weekly": 4
+            }
+          },
+          "backupFlags": ["--tag", "pdm"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.102"]
+          }
+        }
+      ],
+      "auth": {
+        "users": [
+          {
+            "name": "chaz",
+            "passwordBcrypt": "JDJhJDEwJFM0UGxTZkNHeVAydGJiMXdXcE81Qy5FYzR4Ry5RRHpYL0hXZVIwZHJZeHM1SmZ5YVdHLlNP"
+          }
+        ]
+      }
+    }
+---
+# Job to initialize config on first deployment
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backrest-config-init
+  namespace: backrest
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: init-config
+        image: busybox:1.36
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Only copy config if it doesn't exist (first deployment)
+          if [ ! -f /data/config.json ]; then
+            echo "Initializing Backrest config..."
+            cp /config/config.json /data/config.json
+            echo "Config initialized"
+          else
+            echo "Config already exists, skipping initialization"
+          fi
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: initial-config
+          mountPath: /config
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: backrest-data
+      - name: initial-config
+        configMap:
+          name: backrest-initial-config
