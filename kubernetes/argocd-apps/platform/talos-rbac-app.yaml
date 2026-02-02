@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: talos-rbac
+  namespace: argocd
+spec:
+  project: monitoring
+  source:
+    repoURL: https://github.com/charlieshreck/monit_homelab.git
+    targetRevision: main
+    path: kubernetes/platform/rbac
+  destination:
+    server: https://10.10.0.30:6443
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
