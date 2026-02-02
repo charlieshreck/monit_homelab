@@ -1,6 +1,6 @@
 ---
 # Initial Backrest configuration ConfigMap
-# This is used to bootstrap the config on first run
+# This is used to bootstrap the config on first run via init container
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -151,45 +151,3 @@ data:
         ]
       }
     }
----
-# Job to initialize config on first deployment
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: backrest-config-init
-  namespace: backrest
-  annotations:
-    argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
-spec:
-  ttlSecondsAfterFinished: 120
-  template:
-    spec:
-      restartPolicy: OnFailure
-      containers:
-      - name: init-config
-        image: busybox:1.36
-        command:
-        - /bin/sh
-        - -c
-        - |
-          # Only copy config if it doesn't exist (first deployment)
-          if [ ! -f /data/config.json ]; then
-            echo "Initializing Backrest config..."
-            cp /config/config.json /data/config.json
-            echo "Config initialized"
-          else
-            echo "Config already exists, skipping initialization"
-          fi
-        volumeMounts:
-        - name: data
-          mountPath: /data
-        - name: initial-config
-          mountPath: /config
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: backrest-data
-      - name: initial-config
-        configMap:
-          name: backrest-initial-config
