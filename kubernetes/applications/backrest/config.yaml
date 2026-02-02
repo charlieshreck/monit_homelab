@@ -138,7 +138,7 @@ data:
           },
           "backupFlags": ["--tag", "pdm"],
           "commandPrefix": {
-            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.102"]
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.21"]
           }
         }
       ],
