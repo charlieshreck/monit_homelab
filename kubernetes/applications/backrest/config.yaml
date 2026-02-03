@@ -103,6 +103,25 @@ data:
           }
         },
         {
+          "id": "truenas-media-weekly",
+          "repo": "garage-s3",
+          "paths": ["/root"],
+          "schedule": {
+            "cron": "0 5 * * 0",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "weekly": 4,
+              "monthly": 2
+            }
+          },
+          "backupFlags": ["--tag", "truenas-media"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.20.0.100"]
+          }
+        },
+        {
           "id": "truenas-hdd-weekly",
           "repo": "garage-s3",
           "paths": ["/root"],
@@ -139,6 +158,26 @@ data:
           "backupFlags": ["--tag", "pdm"],
           "commandPrefix": {
             "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.21"]
+          }
+        },
+        {
+          "id": "unifi-daily",
+          "repo": "garage-s3",
+          "paths": ["/root", "/etc"],
+          "excludes": ["/root/.cache"],
+          "schedule": {
+            "cron": "15 4 * * *",
+            "clock": "CLOCK_LOCAL"
+          },
+          "retention": {
+            "policyTimeBucketed": {
+              "daily": 7,
+              "weekly": 4
+            }
+          },
+          "backupFlags": ["--tag", "unifi"],
+          "commandPrefix": {
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.51"]
           }
         }
       ],
