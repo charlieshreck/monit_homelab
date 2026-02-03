@@ -11,7 +11,7 @@ data:
     {
       "modno": 1,
       "version": 4,
-      "instance": "kernow-backup-monit",
+      "instance": "kernow-backup",
       "repos": [
         {
           "id": "garage-s3",
