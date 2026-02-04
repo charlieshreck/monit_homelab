@@ -34,3 +34,4 @@ spec:
         - /operation
         - /metadata/annotations
         - /metadata/labels
+        - /spec/source/directory
