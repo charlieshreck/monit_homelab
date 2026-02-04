@@ -62,7 +62,7 @@ data:
 
       - name: Backrest
         group: Storage
-        url: "http://10.20.0.40:31115"
+        url: "http://backrest.backrest.svc:9898"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -79,7 +79,7 @@ data:
 
       - name: Proxmox Pihanga (Monitoring)
         group: Infrastructure
-        url: "https://10.10.0.101:8006"
+        url: "https://10.10.0.20:8006"
         interval: 120s
         conditions:
           - "[STATUS] == 200"
