@@ -392,6 +392,8 @@ data:
         interval: 120s
         conditions:
           - "[STATUS] < 400"
+        client:
+          ignore-redirect: true
 
       - name: Cleanuparr
         group: Media
