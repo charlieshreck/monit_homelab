@@ -423,6 +423,14 @@ data:
         interval: 60s
         conditions:
           - "[STATUS] == 200"
+
+      # Control LXC (Synapse)
+      - name: Afferent (Claude Code Mobile)
+        group: Infrastructure
+        url: "http://10.10.0.22:3456"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
