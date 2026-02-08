@@ -26,6 +26,26 @@ spec:
                 port:
                   number: 80
 ---
+# Grafana - Internal (grafana.monit.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-internal
+  namespace: monitoring
+spec:
+  ingressClassName: traefik-monit
+  rules:
+    - host: grafana.monit.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-grafana
+                port:
+                  number: 80
+---
 # Prometheus - Internal (prometheus.monit.kernow.io)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
