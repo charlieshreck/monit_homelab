@@ -101,6 +101,19 @@ variable "monitoring_node" {
   }
 }
 
+# Infisical Operator Credentials
+variable "infisical_client_id" {
+  description = "Infisical universal auth client ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "infisical_client_secret" {
+  description = "Infisical universal auth client secret"
+  type        = string
+  sensitive   = true
+}
+
 # Cilium LoadBalancer Configuration
 variable "cilium_lb_ip_pool" {
   description = "IP pool for Cilium LoadBalancer (prod network - verified free range)"

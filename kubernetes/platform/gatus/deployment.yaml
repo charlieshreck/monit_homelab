@@ -23,7 +23,7 @@ data:
         method: "POST"
         headers:
           Content-Type: application/json
-          X-API-KEY: 16b7de2a-5d6d-4021-a774-53a083edc28e
+          X-API-KEY: ${KEEP_API_KEY}
         body: |
           {
             "name": "[ENDPOINT_NAME]",
@@ -468,6 +468,12 @@ spec:
             - name: web
               containerPort: 8080
               protocol: TCP
+          env:
+            - name: KEEP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gatus-keep-apikey
+                  key: API_KEY
           volumeMounts:
             - name: config
               mountPath: /config
