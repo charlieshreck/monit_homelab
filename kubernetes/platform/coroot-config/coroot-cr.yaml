@@ -84,7 +84,7 @@ spec:
         webhook:
           url: "http://10.20.0.40:30800/ingest?source=coroot"
           incidents: true
-          deployments: true
+          deployments: false
           incidentTemplate: |
             {
               "title": "{{ .Application.Name }}@{{ .Application.Namespace }}",
