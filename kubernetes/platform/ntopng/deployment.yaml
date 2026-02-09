@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
         - name: ntopng
-          image: ntop/ntopng:stable
+          image: ntop/ntopng:latest
           args:
             - "--http-port=3000"
             - "--community"
