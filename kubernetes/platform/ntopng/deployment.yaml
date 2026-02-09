@@ -51,7 +51,6 @@ spec:
             - "--community"
             - "--disable-login=0"
             - "--data-dir=/var/lib/ntopng"
-            - "-i=tcp://127.0.0.1:5556"
             - "-i=udp://0.0.0.0:2055"
           ports:
             - name: web
