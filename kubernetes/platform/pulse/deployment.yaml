@@ -45,6 +45,10 @@ spec:
               value: "Pacific/Auckland"
             - name: PULSE_PUBLIC_URL
               value: "https://pulse.kernow.io"
+            - name: ALLOWED_ORIGINS
+              value: "https://pulse.kernow.io"
+            - name: PULSE_TRUSTED_PROXY_CIDRS
+              value: "10.0.0.0/8"
             - name: PULSE_AUTH_USER
               valueFrom:
                 secretKeyRef:
