@@ -82,35 +82,25 @@ spec:
       notificationIntegrations:
         baseURL: "https://coroot.kernow.io"
         webhook:
-          url: "http://10.20.0.40:31105/alerts/event/keep"
-          customHeaders:
-            - key: X-API-KEY
-              value: "16b7de2a-5d6d-4021-a774-53a083edc28e"
+          url: "http://10.20.0.40:30800/ingest?source=coroot"
           incidents: true
           deployments: true
           incidentTemplate: |
             {
-              "name": "{{ .Application.Name }}@{{ .Application.Namespace }}",
-              "status": "{{ if eq .Status "OK" }}resolved{{ else }}triggered{{ end }}",
-              "source": ["coroot"],
-              "severity": "{{ if eq .Status "CRITICAL" }}warning{{ else if eq .Status "WARNING" }}info{{ else }}info{{ end }}",
-              "description": "{{ range .Reports }}{{ .Check }}: {{ .Message }} {{ end }}",
-              "labels": {
-                "namespace": "{{ .Application.Namespace }}",
-                "application": "{{ .Application.Name }}",
-                "kind": "{{ .Application.Kind }}"
-              },
-              "url": "{{ .URL }}"
+              "title": "{{ .Application.Name }}@{{ .Application.Namespace }}",
+              "severity": "{{ if eq .Status "CRITICAL" }}critical{{ else if eq .Status "WARNING" }}warning{{ else }}info{{ end }}",
+              "text": "{{ range .Reports }}{{ .Check }}: {{ .Message }} {{ end }}",
+              "application": "{{ .Application.Name }}",
+              "namespace": "{{ .Application.Namespace }}",
+              "url": "{{ .URL }}",
+              "status": "{{ .Status }}"
             }
           deploymentTemplate: |
             {
-              "name": "deployment-{{ .Application.Name }}",
-              "status": "{{ if eq .Status "Deployed" }}resolved{{ else }}triggered{{ end }}",
-              "source": ["coroot"],
+              "title": "Deployment: {{ .Application.Name }}",
               "severity": "info",
-              "description": "Deployment {{ .Version }}: {{ .Status }}",
-              "labels": {
-                "namespace": "{{ .Application.Namespace }}",
-                "application": "{{ .Application.Name }}"
-              }
+              "text": "Deployment {{ .Version }}: {{ .Status }}",
+              "application": "{{ .Application.Name }}",
+              "namespace": "{{ .Application.Namespace }}",
+              "status": "{{ .Status }}"
             }

@@ -16,26 +16,26 @@ data:
       title: "Homelab Status"
       header: "Monitoring Dashboard"
 
-    # Alert forwarding to Keep alert aggregation platform
+    # Alert forwarding to LangGraph incident broker
     alerting:
       custom:
-        url: "http://10.20.0.40:31105/alerts/event"
+        url: "http://10.20.0.40:30800/ingest?source=gatus"
         method: "POST"
         headers:
           Content-Type: application/json
-          X-API-KEY: ${KEEP_API_KEY}
         body: |
           {
-            "name": "[ENDPOINT_NAME]",
-            "status": "[ALERT_TRIGGERED_OR_RESOLVED]",
-            "source": ["gatus"],
-            "labels": {
-              "group": "[ENDPOINT_GROUP]",
-              "endpoint": "[ENDPOINT_NAME]"
-            },
-            "description": "[ENDPOINT_NAME] health check [ALERT_TRIGGERED_OR_RESOLVED]",
-            "severity": "warning"
+            "endpoint_name": "[ENDPOINT_NAME]",
+            "endpoint_group": "[ENDPOINT_GROUP]",
+            "endpoint_url": "[ENDPOINT_URL]",
+            "success": [ALERT_TRIGGERED_OR_RESOLVED],
+            "description": "[ENDPOINT_NAME] ([ENDPOINT_GROUP]) health check failed: [RESULT_ERRORS]",
+            "condition_results": "[RESULT_CONDITIONS]"
           }
+        placeholders:
+          ALERT_TRIGGERED_OR_RESOLVED:
+            TRIGGERED: "false"
+            RESOLVED: "true"
         default-alert:
           enabled: true
           failure-threshold: 3
@@ -468,12 +468,6 @@ spec:
             - name: web
               containerPort: 8080
               protocol: TCP
-          env:
-            - name: KEEP_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: gatus-keep-apikey
-                  key: API_KEY
           volumeMounts:
             - name: config
               mountPath: /config
