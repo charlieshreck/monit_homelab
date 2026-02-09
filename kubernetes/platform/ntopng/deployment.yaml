@@ -1,0 +1,116 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ntopng-data
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntopng-config
+  namespace: monitoring
+data:
+  ntopng.conf: |
+    -G=/var/run/ntopng.pid
+    --http-port=3000
+    --community
+    --disable-login=0
+    --data-dir=/var/lib/ntopng
+    --interface=ntopng -i
+    --collector-port=2055
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntopng
+  namespace: monitoring
+  labels:
+    app: ntopng
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ntopng
+  template:
+    metadata:
+      labels:
+        app: ntopng
+    spec:
+      containers:
+        - name: ntopng
+          image: ntop/ntopng:stable
+          args:
+            - "--http-port=3000"
+            - "--community"
+            - "--disable-login=0"
+            - "--data-dir=/var/lib/ntopng"
+            - "-i=tcp://127.0.0.1:5556"
+            - "-i=udp://0.0.0.0:2055"
+          ports:
+            - name: web
+              containerPort: 3000
+              protocol: TCP
+            - name: netflow
+              containerPort: 2055
+              protocol: UDP
+          env:
+            - name: TZ
+              value: "Pacific/Auckland"
+            - name: NTOPNG_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ntopng-credentials
+                  key: ADMIN_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/ntopng
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ntopng-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntopng
+  namespace: monitoring
+spec:
+  selector:
+    app: ntopng
+  ports:
+    - name: web
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntopng-flow
+  namespace: monitoring
+  annotations:
+    io.cilium/lb-ipam-ips: "10.10.0.32"
+spec:
+  selector:
+    app: ntopng
+  ports:
+    - name: netflow
+      protocol: UDP
+      port: 2055
+      targetPort: 2055
+  type: LoadBalancer
