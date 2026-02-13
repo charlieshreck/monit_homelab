@@ -23,8 +23,6 @@
 **/kubeconfig
 **/kubeconfig.*
 **/.kube/
-**/k3s.yaml
-**/monitoring-k3s.yaml
 
 # Environment files
 **/.env

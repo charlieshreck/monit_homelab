@@ -1,4 +1,4 @@
-# Monitoring Homelab - Talos Linux on Proxmox Carrick
+# Monitoring Homelab - Talos Linux on Proxmox Pihanga
 
 Infrastructure-as-Code for deploying a Talos Linux monitoring cluster using **Terraform + ArgoCD** pipeline.
 
@@ -15,7 +15,7 @@ Infrastructure-as-Code for deploying a Talos Linux monitoring cluster using **Te
 
 ## Overview
 
-This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, Coroot, etc.). The monitoring cluster is isolated from production on a separate Proxmox host and network. All services are accessed via Traefik LoadBalancer ingress (10.30.0.90) with DNS-based routing.
+This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for monitoring infrastructure (Prometheus, Grafana, VictoriaMetrics, Coroot, etc.). The monitoring cluster runs on Proxmox Pihanga on the production network. All services are accessed via Traefik LoadBalancer ingress with DNS-based routing.
 
 ### Service Access
 
@@ -24,6 +24,8 @@ This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for mo
 | Grafana | https://grafana.kernow.io | https://grafana.kernow.io | Dashboards |
 | Coroot | https://coroot.kernow.io | https://coroot.kernow.io | eBPF Observability |
 | Beszel | https://beszel.kernow.io | https://beszel.kernow.io | Host Monitoring |
+| Pulse | https://pulse.kernow.io | https://pulse.kernow.io | Server Monitoring |
+| Tugtainer | https://tugtainer.kernow.io | https://tugtainer.kernow.io | Container Updates |
 | Prometheus | http://prometheus.monit.kernow.io | - | Metrics |
 | AlertManager | http://alertmanager.monit.kernow.io | - | Alerts |
 | VictoriaMetrics | http://victoriametrics.monit.kernow.io | - | TSDB |
@@ -37,19 +39,19 @@ This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for mo
 ┌─────────────────────────────────────────────────────────────────┐
 │ Deployment Pipeline                                             │
 ├─────────────────────────────────────────────────────────────────┤
-│ 1. Terraform   → Create Talos VM on Proxmox Carrick            │
+│ 1. Terraform   → Create Talos VM on Proxmox Pihanga            │
 │ 2. Terraform   → Bootstrap Talos + Kubernetes + Cilium CNI     │
 │ 3. ArgoCD      → Deploy monitoring stack (GitOps from prod)    │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│ Proxmox Carrick (10.30.0.10)                                    │
+│ Proxmox Pihanga (10.10.0.20)                                    │
 │ ┌─────────────────────────────────────────────────────────────┐ │
-│ │ Talos Monitor VM (VMID: 200, IP: 10.30.0.20)               │ │
+│ │ Talos Monitor VM (VMID: 200, IP: 10.10.0.30)               │ │
 │ │ ┌─────────────────────────────────────────────────────────┐ │ │
 │ │ │ Talos Linux v1.11.5 (immutable OS)                     │ │ │
 │ │ │ Kubernetes v1.34.1                                      │ │ │
-│ │ │ Cilium CNI (LB pool: 10.30.0.90-99)                   │ │ │
+│ │ │ Cilium CNI (LB pool: 10.10.0.31-35)                   │ │ │
 │ │ │                                                         │ │ │
 │ │ │ ┌─────────────────────────────────────────────────────┐ │ │ │
 │ │ │ │ Monitoring Stack                                     │ │ │ │
@@ -59,32 +61,28 @@ This repository deploys a Talos Linux Kubernetes cluster (single-node VM) for mo
 │ │ └─────────────────────────────────────────────────────────┘ │ │
 │ └─────────────────────────────────────────────────────────────┘ │
 │                                                                   │
-│ Network: vmbr0 (10.30.0.0/24)                                   │
-│ Storage: Kerrier ZFS pool                                       │
+│ Network: vmbr0 (10.10.0.0/24, Production)                       │
+│ Storage: Local SSD (boot) + NFS from TrueNAS-HDD (data)        │
 └─────────────────────────────────────────────────────────────────┘
-
-Management: iac LXC (10.10.0.175) - Runs Terraform, talosctl
-Production: Proxmox Ruapehu (10.10.0.10) - Separate cluster
 ```
 
 ### Key Features
 
 - **Talos Linux**: Immutable, API-driven OS (same as prod and agentic clusters)
 - **Cilium CNI**: Networking and LoadBalancer via L2 announcements
-- **Network Isolation**: Monitoring on 10.30.0.0/24, Production on 10.10.0.0/24
 - **GitOps**: ArgoCD (on prod cluster) manages monitoring stack deployment
 - **Terraform-managed**: Full VM lifecycle via Terraform
 
 ## Prerequisites
 
 ### Required Tools
-- **Terraform** >= 1.10 (installed on iac LXC)
-- **talosctl** (installed on iac LXC)
-- **kubectl** >= 1.34 (installed on iac LXC)
+- **Terraform** >= 1.10
+- **talosctl**
+- **kubectl** >= 1.34
 
 ### Access Requirements
-- Proxmox Carrick API credentials
-- Network access to 10.30.0.0/24
+- Proxmox Pihanga API credentials
+- Network access to 10.10.0.0/24
 
 ## Quick Start
 
@@ -117,17 +115,17 @@ kubectl get pods -A
 # Expected: kube-system pods + cilium pods running
 
 kubectl cluster-info
-# Expected: Kubernetes control plane at https://10.30.0.20:6443
+# Expected: Kubernetes control plane at https://10.10.0.30:6443
 ```
 
 ### 3. Verify with talosctl
 
 ```bash
 # Check Talos health
-talosctl --nodes 10.30.0.20 health
+talosctl --nodes 10.10.0.30 health
 
 # View Talos dashboard
-talosctl --nodes 10.30.0.20 dashboard
+talosctl --nodes 10.10.0.30 dashboard
 ```
 
 ## Repository Structure
@@ -153,6 +151,7 @@ talosctl --nodes 10.30.0.20 dashboard
 │       ├── monitoring-namespace.yaml
 │       ├── storage/                # NFS PV/PVC definitions
 │       ├── beszel/                 # Host monitoring
+│       ├── tugtainer/              # Container update management
 │       └── gatus/                  # Endpoint health checks
 │
 ├── scripts/
@@ -164,8 +163,7 @@ talosctl --nodes 10.30.0.20 dashboard
 ├── renovate.json                   # Dependency update config
 ├── CLAUDE.md                       # Claude Code context
 ├── README.md                       # This file
-├── GITOPS-WORKFLOW.md              # GitOps rules
-└── renovate.json                   # Dependency update config
+└── GITOPS-WORKFLOW.md              # GitOps rules
 ```
 
 ## Deployment Workflow
@@ -204,11 +202,11 @@ See `terraform/talos-single-node/variables.tf` for full list. Key variables:
 | `cluster_name` | monitoring-cluster | Cluster name |
 | `monitoring_node.vmid` | 200 | VM ID on Proxmox |
 | `monitoring_node.name` | talos-monitor | VM hostname |
-| `monitoring_node.ip` | 10.30.0.20 | Node IP address |
+| `monitoring_node.ip` | 10.10.0.30 | Node IP address |
 | `monitoring_node.cores` | 4 | CPU cores |
 | `monitoring_node.memory` | 12288 | RAM in MB (12GB) |
 | `monitoring_node.disk` | 50 | Disk size in GB |
-| `cilium_lb_ip_pool` | 10.30.0.90-99 | Cilium LB IP range |
+| `cilium_lb_ip_pool` | 10.10.0.31-35 | Cilium LB IP range |
 
 ## Troubleshooting
 
@@ -216,20 +214,20 @@ See `terraform/talos-single-node/variables.tf` for full list. Key variables:
 
 ```bash
 # Check Talos node health
-talosctl --nodes 10.30.0.20 health
+talosctl --nodes 10.10.0.30 health
 
 # View Talos logs
-talosctl --nodes 10.30.0.20 logs kubelet
-talosctl --nodes 10.30.0.20 logs containerd
+talosctl --nodes 10.10.0.30 logs kubelet
+talosctl --nodes 10.10.0.30 logs containerd
 
 # View Talos dashboard (interactive)
-talosctl --nodes 10.30.0.20 dashboard
+talosctl --nodes 10.10.0.30 dashboard
 
 # Check Talos services
-talosctl --nodes 10.30.0.20 services
+talosctl --nodes 10.10.0.30 services
 
 # Reboot node (if needed)
-talosctl --nodes 10.30.0.20 reboot
+talosctl --nodes 10.10.0.30 reboot
 ```
 
 ### Kubernetes Issues
@@ -279,8 +277,20 @@ kubectl describe pv victoria-metrics-pv
 kubectl get pvc -n monitoring
 
 # Verify NFS server is reachable
-kubectl run nfs-test --rm -it --image=busybox -- ping -c3 10.30.0.120
+kubectl run nfs-test --rm -it --image=busybox -- ping -c3 10.20.0.103
 ```
+
+## Network Configuration
+
+### IP Allocation
+
+| Resource | IP | Purpose |
+|----------|--------|---------|
+| Pihanga (Proxmox) | 10.10.0.20 | Hypervisor |
+| Gateway | 10.10.0.1 | Network gateway (OPNsense) |
+| Talos Monitor | 10.10.0.30 | Monitoring cluster node |
+| Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IPs |
+| TrueNAS-HDD | 10.20.0.103 | NFS storage |
 
 ## Maintenance
 
@@ -294,7 +304,7 @@ terraform plan -out=upgrade.plan
 terraform apply upgrade.plan
 
 # Or use talosctl for in-place upgrade:
-talosctl --nodes 10.30.0.20 upgrade --image=factory.talos.dev/installer/<schematic>:v1.x.x
+talosctl --nodes 10.10.0.30 upgrade --image=factory.talos.dev/installer/<schematic>:v1.x.x
 ```
 
 ### Destroying Infrastructure
@@ -308,25 +318,6 @@ terraform plan -destroy
 # Destroy VM
 terraform destroy
 ```
-
-## Network Configuration
-
-### IP Allocation
-
-| Resource | IP | Network | Purpose |
-|----------|----|---------| --------|
-| Carrick Proxmox | 10.30.0.10 | 10.30.0.0/24 | Hypervisor |
-| Gateway | 10.30.0.1 | 10.30.0.0/24 | Network gateway |
-| Talos Monitor | 10.30.0.20 | 10.30.0.0/24 | Monitoring cluster |
-| Traefik LB | 10.30.0.90 | 10.30.0.0/24 | Cilium LoadBalancer |
-| TrueNAS-M | 10.30.0.120 | 10.30.0.0/24 | NFS storage |
-| iac LXC | 10.10.0.175 | 10.10.0.0/24 | Management/Terraform |
-
-### Network Isolation
-
-- **Monitoring Network**: 10.30.0.0/24 (Carrick)
-- **Production Network**: 10.10.0.0/24 (Ruapehu)
-- **Routing**: iac LXC can reach both networks for management
 
 ## Architecture Decisions
 
@@ -345,13 +336,13 @@ terraform destroy
 
 ### Why Cilium?
 
-- **LoadBalancer**: L2 announcements for service exposure (10.30.0.90-99)
+- **LoadBalancer**: L2 announcements for service exposure (10.10.0.31-35)
 - **Consistency**: Same CNI as other clusters
 - **Observability**: Built-in Hubble for network visibility
 
 ## Migration History
 
-This cluster was originally deployed as K3s on a Debian 13 LXC container (Dec 2025). It was migrated to Talos Linux on a Proxmox VM (Dec 2025) for consistency with prod and agentic clusters. Legacy K3s-era artifacts were removed in Jan 2026; they remain in git history if needed.
+This cluster was originally deployed as K3s on a Debian 13 LXC container on Proxmox Carrick (10.30.0.0/24 network) in Dec 2025. It was migrated to Talos Linux on a Proxmox VM, then relocated to Pihanga (10.10.0.0/24) for consistency with the production network. Legacy K3s-era artifacts were removed in Jan 2026; they remain in git history if needed.
 
 ## References
 

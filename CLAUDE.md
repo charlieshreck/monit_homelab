@@ -11,7 +11,7 @@
 | **VMID** | 200 |
 | **IP** | 10.10.0.30 |
 | **Network** | 10.10.0.0/24 (Production) |
-| **Proxmox Host** | Pihanga (10.10.0.101) |
+| **Proxmox Host** | Pihanga (10.10.0.20) |
 | **CNI** | Cilium |
 | **LB IP Pool** | 10.10.0.31-35 (Cilium) |
 | **Storage** | Local SSD (boot) + NFS from TrueNAS-HDD (data) |
@@ -60,7 +60,6 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 │   └── sync-coroot-api-keys.sh   # Coroot API key sync
 ├── docs/                         # Additional documentation
 ├── kubeconfig                    # Cluster kubeconfig
-├── renovate.json                 # Dependency updates
 └── renovate.json                 # Dependency updates
 ```
 
@@ -76,13 +75,15 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 | VictoriaMetrics | http://victoriametrics.monit.kernow.io | - |
 | VictoriaLogs | http://victorialogs.monit.kernow.io | - |
 | Gatus | http://gatus.monit.kernow.io | - |
+| Pulse | https://pulse.kernow.io | https://pulse.kernow.io |
+| Tugtainer | https://tugtainer.kernow.io | https://tugtainer.kernow.io |
 | Traefik | http://traefik.monit.kernow.io | - |
 
 ## Network
 
 | Resource | IP | Purpose |
 |----------|-----|---------|
-| Pihanga (Proxmox) | 10.10.0.101 | Hypervisor |
+| Pihanga (Proxmox) | 10.10.0.20 | Hypervisor |
 | Gateway | 10.10.0.1 | Network gateway (OPNsense) |
 | talos-monitor | 10.10.0.30 | Monitoring cluster node |
 | Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IP range |

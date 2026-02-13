@@ -2,7 +2,7 @@
 
 ## Overview
 
-Talos Linux monitoring cluster deployed on Proxmox Carrick via Terraform. Single-node control-plane VM running the full monitoring stack.
+Talos Linux monitoring cluster deployed on Proxmox Pihanga via Terraform. Single-node control-plane VM running the full monitoring stack.
 
 ## Cluster Specifications
 
@@ -13,28 +13,25 @@ Talos Linux monitoring cluster deployed on Proxmox Carrick via Terraform. Single
 | **CNI** | Cilium (L2 announcements) |
 | **VMID** | 200 |
 | **Hostname** | talos-monitor |
-| **IP Address** | 10.30.0.20 |
+| **IP Address** | 10.10.0.30 |
 | **CPU Cores** | 4 |
 | **Memory** | 12GB (12288MB) |
-| **Boot Disk** | 50GB (on Kerrier ZFS pool) |
-| **Network** | vmbr0 (10.30.0.0/24) |
-| **LB IP Pool** | 10.30.0.90-99 (Cilium) |
+| **Boot Disk** | 50GB (local SSD) |
+| **Network** | vmbr0 (10.10.0.0/24, Production) |
+| **LB IP Pool** | 10.10.0.31-35 (Cilium) |
 
 ## Network Topology
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ Production Network (10.10.0.0/24)                               │
-│ Proxmox Ruapehu: 10.10.0.10                                    │
-│ [Talos K8s Cluster - multi-node]                                │
-└─────────────────────────────────────────────────────────────────┘
-                              ↕ (Isolated)
-┌─────────────────────────────────────────────────────────────────┐
-│ Monitoring Network (10.30.0.0/24)                              │
-│ Proxmox Carrick: 10.30.0.10                                    │
+│                                                                   │
+│ Proxmox Ruapehu: 10.10.0.10 — Prod cluster (multi-node)        │
+│ Proxmox Pihanga: 10.10.0.20 — Monit cluster (single-node)      │
+│                                                                   │
 │ ┌─────────────────────────────────────────────────────────────┐ │
 │ │ Talos Monitor VM (VMID: 200)                                │ │
-│ │ IP: 10.30.0.20                                              │ │
+│ │ IP: 10.10.0.30                                              │ │
 │ │ Talos Linux v1.11.5 + K8s v1.34.1 + Cilium                │ │
 │ └─────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
@@ -78,29 +75,30 @@ kubectl get nodes -o wide
 # talos-monitor   Ready    control-plane   v1.34.1   Talos (v1.11.5)
 
 # Talos
-talosctl --nodes 10.30.0.20 health
+talosctl --nodes 10.10.0.30 health
 ```
 
 ## Comparison with Other Clusters
 
-| Aspect | Production (Ruapehu) | Monitoring (Carrick) | Agentic (Ruapehu) |
+| Aspect | Production (Ruapehu) | Monitoring (Pihanga) | Agentic (Hikurangi) |
 |--------|---------------------|----------------------|--------------------|
-| **Proxmox IP** | 10.10.0.10 | 10.30.0.10 | 10.10.0.10 |
-| **Network** | 10.10.0.0/24 | 10.30.0.0/24 | 10.20.0.0/24 |
+| **Proxmox IP** | 10.10.0.10 | 10.10.0.20 | 10.30.0.10 |
+| **Network** | 10.10.0.0/24 | 10.10.0.0/24 | 10.20.0.0/24 |
 | **OS** | Talos Linux | Talos Linux | Talos Linux |
 | **Nodes** | 1 CP + 3 workers | 1 CP (single-node) | 1 CP + workers |
 | **CNI** | Cilium | Cilium | Cilium |
-| **Storage** | Ranginui/Taranaki ZFS | Kerrier ZFS + NFS | ZFS |
+| **Storage** | Ranginui/Taranaki ZFS | Local SSD + NFS | ZFS |
 | **ArgoCD** | Local (self-managed) | Remote (from prod) | No ArgoCD |
 | **Purpose** | Production workloads | Monitoring infrastructure | AI platform |
 
 ## Migration History
 
-- **Dec 2025**: Originally deployed as K3s on Debian 13 LXC (VMID 200)
+- **Dec 2025**: Originally deployed as K3s on Debian 13 LXC (VMID 200) on Proxmox Carrick (10.30.0.0/24)
 - **Dec 2025**: Migrated to Talos Linux VM for consistency across all clusters
+- **Jan 2026**: Relocated to Proxmox Pihanga (10.10.0.0/24)
 - Legacy K3s artifacts removed Jan 2026 (available in git history)
 
 ---
 
 **Status**: Deployed and operational
-**Last updated**: 2026-01
+**Last updated**: 2026-02
