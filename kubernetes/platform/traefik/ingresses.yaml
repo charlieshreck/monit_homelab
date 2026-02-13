@@ -275,3 +275,29 @@ spec:
                 name: pulse
                 port:
                   number: 7655
+---
+# Tugtainer - User-facing (tugtainer.kernow.io)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tugtainer
+  namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "false"
+spec:
+  ingressClassName: traefik-monit
+  tls:
+    - hosts:
+        - tugtainer.kernow.io
+      secretName: kernow-io-tls
+  rules:
+    - host: tugtainer.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tugtainer
+                port:
+                  number: 80
