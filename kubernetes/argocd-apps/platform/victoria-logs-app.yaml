@@ -34,12 +34,13 @@ spec:
             envflag.enable: "true"
             envflag.prefix: VL_
             loggerFormat: json
-          startupProbe:
-            tcpSocket:
-              port: http
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 60
+          probe:
+            startup:
+              tcpSocket: {}
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              failureThreshold: 60
+              timeoutSeconds: 5
           service:
             servicePort: 9428
             type: ClusterIP
