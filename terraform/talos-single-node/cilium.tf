@@ -74,6 +74,14 @@ resource "helm_release" "cilium" {
       enabled = true
     }
 
+    # Native routing — no VXLAN overhead (single node, same L2)
+    routingMode           = "native"
+    autoDirectNodeRoutes  = true
+    ipv4NativeRoutingCIDR = "10.244.0.0/16"
+    bpf = {
+      masquerade = true
+    }
+
     hubble = { enabled = false }
   })]
 }
