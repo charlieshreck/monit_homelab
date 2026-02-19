@@ -181,8 +181,11 @@ data "talos_machine_configuration" "monitoring_node" {
           hostname = local.node_config.name
           interfaces = [
             {
-              # eth0: Production network (management, ArgoCD, API server)
-              interface = "eth0"
+              # NIC 0: Production network (management, ArgoCD, API server)
+              # Use deviceSelector by MAC for reliable matching (ens18 on Proxmox virtio)
+              deviceSelector = {
+                hardwareAddr = local.node_config.mac_address
+              }
               addresses = ["${local.node_config.ip}/24"]
               routes = [
                 {
@@ -192,8 +195,11 @@ data "talos_machine_configuration" "monitoring_node" {
               ]
             },
             {
-              # eth1: Monitoring network (direct L2 NFS to TrueNAS-HDD)
-              interface = "eth1"
+              # NIC 1: Monitoring network (direct L2 NFS to TrueNAS-HDD)
+              # Use deviceSelector by MAC for reliable matching (ens19 on Proxmox virtio)
+              deviceSelector = {
+                hardwareAddr = local.monitoring_node_monit_mac
+              }
               addresses = ["${local.monit_network.ip}/24"]
             }
           ]
