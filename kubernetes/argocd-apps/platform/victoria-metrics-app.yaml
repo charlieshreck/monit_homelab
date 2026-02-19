@@ -39,7 +39,7 @@ spec:
               tcpSocket: {}
               initialDelaySeconds: 30
               periodSeconds: 10
-              failureThreshold: 60
+              failureThreshold: 180
               timeoutSeconds: 5
           service:
             servicePort: 8428
