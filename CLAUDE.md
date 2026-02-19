@@ -81,19 +81,24 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 
 ## Network
 
-| Resource | IP | Purpose |
-|----------|-----|---------|
-| Pihanga (Proxmox) | 10.10.0.20 | Hypervisor |
-| Gateway | 10.10.0.1 | Network gateway (OPNsense) |
-| talos-monitor | 10.10.0.30 | Monitoring cluster node |
-| Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IP range |
-| TrueNAS-HDD | 10.10.0.103 | NFS storage (prod network) |
+Dual-NIC VM: eth0 on prod (management, ArgoCD, Cilium LB), eth1 on monit (NFS storage).
+
+| Resource | IP | Network | Purpose |
+|----------|-----|---------|---------|
+| Pihanga (Proxmox) | 10.10.0.20 | prod (vmbr0) | Hypervisor |
+| Gateway | 10.10.0.1 | prod | Network gateway (OPNsense) |
+| talos-monitor eth0 | 10.10.0.30 | prod (vmbr0) | K8s API, ArgoCD, Cilium LB |
+| talos-monitor eth1 | 10.30.0.30 | monit (vmbr1) | Direct L2 NFS to TrueNAS-HDD |
+| Cilium LB Pool | 10.10.0.31-35 | prod | LoadBalancer IP range |
+| TrueNAS-HDD | 10.30.0.103 | monit | NFS storage (direct L2 path) |
 
 ## Storage
 
-NFS from TrueNAS-HDD (10.10.0.103) - Tekapo RAIDZ1 pool (5x 500GB EVOs):
+NFS from TrueNAS-HDD (10.30.0.103 on monit network) - Tekapo RAIDZ1 pool (5x 500GB EVOs):
 - `/mnt/Tekapo/victoria-metrics` (500Gi) - VictoriaMetrics TSDB
 - `/mnt/Tekapo/victoria-logs` (1000Gi) - VictoriaLogs
+
+NFS traffic uses the dedicated monit network (10.30.0.0/24) for direct L2 path — no OPNsense routing.
 
 ## GitOps Workflow
 

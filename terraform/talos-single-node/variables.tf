@@ -31,15 +31,33 @@ variable "monitoring_proxmox_node" {
 
 # Network Configuration
 variable "network_bridge" {
-  description = "Management network bridge"
+  description = "Production network bridge (management, ArgoCD, API server)"
   type        = string
   default     = "vmbr0"
 }
 
+variable "network_bridge_monit" {
+  description = "Monitoring network bridge (NFS storage path to TrueNAS-HDD)"
+  type        = string
+  default     = "vmbr1"
+}
+
 variable "monitoring_gateway" {
-  description = "Monitoring network gateway (prod network temporarily)"
+  description = "Production network gateway (default route stays on prod for ArgoCD access)"
   type        = string
   default     = "10.10.0.1"
+}
+
+variable "monit_network_ip" {
+  description = "Talos-monitor IP on the monitoring network (direct L2 NFS path)"
+  type        = string
+  default     = "10.30.0.30"
+}
+
+variable "truenas_hdd_monit_ip" {
+  description = "TrueNAS-HDD IP on the monitoring network (direct L2 NFS path from talos-monitor)"
+  type        = string
+  default     = "10.30.0.103"
 }
 
 variable "dns_servers" {

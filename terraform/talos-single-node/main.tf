@@ -59,10 +59,17 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
     type         = "4m"
   }
 
-  # Single NIC on vmbr0 (management network)
+  # NIC 0: Production network (management, ArgoCD, API server, Cilium LB)
   network_device {
     bridge      = var.network_bridge
     mac_address = local.node_config.mac_address
+    model       = "virtio"
+  }
+
+  # NIC 1: Monitoring network (direct L2 NFS path to TrueNAS-HDD)
+  network_device {
+    bridge      = var.network_bridge_monit
+    mac_address = local.monitoring_node_monit_mac
     model       = "virtio"
   }
 
@@ -174,6 +181,7 @@ data "talos_machine_configuration" "monitoring_node" {
           hostname = local.node_config.name
           interfaces = [
             {
+              # eth0: Production network (management, ArgoCD, API server)
               interface = "eth0"
               addresses = ["${local.node_config.ip}/24"]
               routes = [
@@ -182,6 +190,11 @@ data "talos_machine_configuration" "monitoring_node" {
                   gateway = local.network.gateway
                 }
               ]
+            },
+            {
+              # eth1: Monitoring network (direct L2 NFS to TrueNAS-HDD)
+              interface = "eth1"
+              addresses = ["${local.monit_network.ip}/24"]
             }
           ]
           nameservers = var.dns_servers

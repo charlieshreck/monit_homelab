@@ -266,11 +266,12 @@ resource "kubernetes_secret" "production_cluster_credentials" {
 # ============================================================================
 # NFS Storage from TrueNAS-HDD (Tekapo pool)
 # ============================================================================
-# Victoria metrics/logs use NFS from TrueNAS-HDD at 10.10.0.103
+# Victoria metrics/logs use NFS from TrueNAS-HDD over the monitoring network
+# (direct L2 path via eth1 on 10.30.0.0/24 - no OPNsense routing needed)
 # Datasets created on Tekapo RAIDZ1 pool (5x 500GB EVOs = ~2TB usable)
 
 locals {
-  truenas_hdd_ip = "10.10.0.103"
+  truenas_hdd_ip = var.truenas_hdd_monit_ip
 }
 
 # NFS PV for VictoriaMetrics
