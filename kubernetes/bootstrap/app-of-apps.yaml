@@ -35,4 +35,3 @@ spec:
         - /metadata/annotations
         - /metadata/labels
         - /spec/source/directory
-        - /spec/source/helm
