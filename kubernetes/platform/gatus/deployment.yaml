@@ -46,7 +46,7 @@ data:
       # Storage
       - name: Garage S3 API
         group: Storage
-        url: "http://10.20.0.103:30188"
+        url: "http://10.10.0.103:30188"
         interval: 60s
         conditions:
           - "[STATUS] == 403"  # Anonymous requests return 403
@@ -55,7 +55,7 @@ data:
 
       - name: Garage Web UI
         group: Storage
-        url: "http://10.20.0.103:30186"
+        url: "http://10.10.0.103:30186"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -182,7 +182,7 @@ data:
 
       - name: TrueNAS HDD
         group: Storage
-        url: "https://10.20.0.103:443"
+        url: "https://10.10.0.103:443"
         interval: 120s
         conditions:
           - "[STATUS] == 200"

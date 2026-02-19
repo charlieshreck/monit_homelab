@@ -141,7 +141,7 @@ output "pbs_install_steps" {
     4. Add NFS datastore:
        - SSH to PBS: ssh root@${local.pbs_config.ip}
        - mkdir -p /mnt/pbs-datastore
-       - echo "10.20.0.103:/mnt/Taupo/pbs /mnt/pbs-datastore nfs defaults,_netdev 0 0" >> /etc/fstab
+       - echo "10.10.0.103:/mnt/Taupo/pbs /mnt/pbs-datastore nfs defaults,_netdev 0 0" >> /etc/fstab
        - mount -a
        - In PBS UI: Administration → Storage → Add Directory
          - Name: pbs-datastore

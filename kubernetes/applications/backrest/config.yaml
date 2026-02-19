@@ -15,7 +15,7 @@ data:
       "repos": [
         {
           "id": "garage-s3",
-          "uri": "s3:http://10.20.0.103:30188/backrest",
+          "uri": "s3:http://10.10.0.103:30188/backrest",
           "guid": "ca2231ad6f43e4f64124d4abcde0774e9b1eeca5dea0c9afbafc76277b8df146",
           "password": "0kbiHiNLqevgMpWAb1y8yMR3vy6qmWuCiTu/5hiVpEwA2s5j",
           "prunePolicy": {
@@ -147,7 +147,7 @@ data:
           },
           "backupFlags": ["--tag", "truenas-hdd"],
           "commandPrefix": {
-            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.20.0.103"]
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.103"]
           }
         },
         {

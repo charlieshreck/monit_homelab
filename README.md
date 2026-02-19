@@ -277,7 +277,7 @@ kubectl describe pv victoria-metrics-pv
 kubectl get pvc -n monitoring
 
 # Verify NFS server is reachable
-kubectl run nfs-test --rm -it --image=busybox -- ping -c3 10.20.0.103
+kubectl run nfs-test --rm -it --image=busybox -- ping -c3 10.10.0.103
 ```
 
 ## Network Configuration
@@ -290,7 +290,7 @@ kubectl run nfs-test --rm -it --image=busybox -- ping -c3 10.20.0.103
 | Gateway | 10.10.0.1 | Network gateway (OPNsense) |
 | Talos Monitor | 10.10.0.30 | Monitoring cluster node |
 | Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IPs |
-| TrueNAS-HDD | 10.20.0.103 | NFS storage |
+| TrueNAS-HDD | 10.10.0.103 | NFS storage |
 
 ## Maintenance
 

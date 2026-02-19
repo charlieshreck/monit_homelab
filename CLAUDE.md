@@ -87,11 +87,11 @@ Legacy K3s-era directories (`ansible/`, `semaphore/`, `terraform/lxc-only/`) wer
 | Gateway | 10.10.0.1 | Network gateway (OPNsense) |
 | talos-monitor | 10.10.0.30 | Monitoring cluster node |
 | Cilium LB Pool | 10.10.0.31-35 | LoadBalancer IP range |
-| TrueNAS-HDD | 10.20.0.103 | NFS storage (agentic network) |
+| TrueNAS-HDD | 10.10.0.103 | NFS storage (prod network) |
 
 ## Storage
 
-NFS from TrueNAS-HDD (10.20.0.103) - Tekapo RAIDZ1 pool (5x 500GB EVOs):
+NFS from TrueNAS-HDD (10.10.0.103) - Tekapo RAIDZ1 pool (5x 500GB EVOs):
 - `/mnt/Tekapo/victoria-metrics` (500Gi) - VictoriaMetrics TSDB
 - `/mnt/Tekapo/victoria-logs` (1000Gi) - VictoriaLogs
 
