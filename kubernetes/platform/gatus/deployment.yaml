@@ -216,21 +216,21 @@ data:
 
       - name: LiteLLM Proxy
         group: AI Platform
-        url: "http://10.20.0.40:31400/health"
+        url: "http://10.20.0.40:30400/health"
         interval: 30s
         conditions:
           - "[STATUS] == 200"
 
       - name: LangGraph Orchestrator
         group: AI Platform
-        url: "http://10.20.0.40:31095/health"
+        url: "http://10.20.0.40:30800/health"
         interval: 30s
         conditions:
           - "[STATUS] == 200"
 
-      - name: Matrix Bot
+      - name: Alerting Pipeline
         group: AI Platform
-        url: "http://10.20.0.40:31102/health"
+        url: "http://alerting-pipeline.agentic.kernow.io/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
