@@ -6,56 +6,82 @@
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard - Monitoring Cluster",
   "automerge": true,
-  "automergeType": "pr",
-  "automergeStrategy": "squash",
-  "platformAutomerge": true,
+  "automergeType": "branch",
+  "platformAutomerge": false,
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
   "prCreation": "not-pending",
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   },
   "kubernetes": {
-    "fileMatch": ["kubernetes/.+\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/kubernetes/.+\\.ya?ml$/"
+    ]
   },
   "packageRules": [
     {
       "description": "Auto-merge patch and minor updates after stability period",
-      "matchUpdateTypes": ["patch", "minor"],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
       "automerge": true
     },
     {
-      "description": "Require review for major updates",
-      "matchUpdateTypes": ["major"],
+      "description": "Require review for major updates (creates PR)",
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
-      "labels": ["major-update"]
+      "automergeType": "pr",
+      "labels": [
+        "major-update"
+      ]
     },
     {
       "description": "Group monitoring platform updates",
-      "matchManagers": ["kubernetes"],
-      "matchFileNames": ["kubernetes/platform/**"],
+      "matchManagers": [
+        "kubernetes"
+      ],
+      "matchFileNames": [
+        "kubernetes/platform/**"
+      ],
       "groupName": "monitoring-platform"
     },
     {
       "description": "Group monitoring application updates",
-      "matchManagers": ["kubernetes"],
-      "matchFileNames": ["kubernetes/applications/**"],
+      "matchManagers": [
+        "kubernetes"
+      ],
+      "matchFileNames": [
+        "kubernetes/applications/**"
+      ],
       "groupName": "monitoring-apps"
     },
     {
       "description": "Group Terraform updates",
-      "matchManagers": ["terraform"],
+      "matchManagers": [
+        "terraform"
+      ],
       "groupName": "terraform"
     },
     {
       "description": "Group Ansible updates",
-      "matchManagers": ["ansible", "ansible-galaxy"],
+      "matchManagers": [
+        "ansible",
+        "ansible-galaxy"
+      ],
       "groupName": "ansible"
     },
     {
       "description": "Group Coroot components",
-      "matchPackagePatterns": ["^ghcr\\.io/coroot/"],
+      "matchPackageNames": [
+        "/^ghcr\\.io/coroot//"
+      ],
       "groupName": "coroot-images"
     }
   ],
@@ -70,6 +96,11 @@
   "semanticCommits": "enabled",
   "commitMessagePrefix": "chore(deps):",
   "rebaseWhen": "behind-base-branch",
-  "labels": ["dependencies", "renovate"],
-  "assignees": ["@charlieshreck"]
+  "labels": [
+    "dependencies",
+    "renovate"
+  ],
+  "assignees": [
+    "@charlieshreck"
+  ]
 }
