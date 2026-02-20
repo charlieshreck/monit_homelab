@@ -19,7 +19,7 @@ This repository uses GitOps principles. ALL infrastructure changes MUST be:
 
 ## The ONLY Correct Workflow
 
-### For Terraform (Talos VM on Carrick)
+### For Terraform (Talos VM on Pihanga)
 
 ```bash
 cd /home/monit_homelab/terraform/talos-single-node
@@ -112,7 +112,7 @@ terraform apply
 echo "password: mypassword" > secret.yaml
 
 # WRONG: SSH to the node (Talos has no SSH)
-ssh root@10.30.0.20
+ssh root@10.10.0.30
 ```
 
 ### CORRECT Alternatives:
@@ -133,7 +133,7 @@ git add . && git commit && git push
 terraform plan && terraform apply
 
 # RIGHT: Use talosctl for node operations
-talosctl --nodes 10.30.0.20 health
+talosctl --nodes 10.10.0.30 health
 ```
 
 ## Exception: Manual ConfigMaps for Sensitive Configs
@@ -215,10 +215,10 @@ terraform apply
 
 ## Monitoring Cluster Specifics
 
-- **Talos Linux**: Single-node VM on Proxmox Carrick (10.30.0.20)
+- **Talos Linux**: Single-node VM on Proxmox Pihanga (10.10.0.20), node IP 10.10.0.30
 - **Kubernetes**: v1.34.1 with Cilium CNI
 - **Purpose**: Monitoring infrastructure (Coroot, VictoriaMetrics, Grafana, etc.)
-- **Storage**: NFS from TrueNAS-M (10.30.0.120) + Cilium LB (10.30.0.90-99)
+- **Storage**: NFS from TrueNAS-HDD (10.10.0.103) + Cilium LB (10.10.0.31-35)
 - **ArgoCD**: Managed remotely from prod cluster
 
 ---
