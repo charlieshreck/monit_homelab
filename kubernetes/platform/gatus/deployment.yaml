@@ -189,15 +189,6 @@ data:
         client:
           insecure: true
 
-      - name: TrueNAS Media
-        group: Storage
-        url: "https://10.20.0.100:443"
-        interval: 120s
-        conditions:
-          - "[STATUS] == 200"
-        client:
-          insecure: true
-
       # Network — AdGuard health check (HTTP instead of DNS due to firewall)
       - name: AdGuard Home
         group: Network
@@ -424,10 +415,10 @@ data:
         conditions:
           - "[STATUS] == 200"
 
-      # Control LXC (Synapse)
-      - name: Afferent (Claude Code Mobile)
-        group: Infrastructure
-        url: "http://10.10.0.22:3456"
+      # Kernow Hub (Agentic cluster)
+      - name: Kernow Hub
+        group: AI Platform
+        url: "http://10.20.0.40:30456/health"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
