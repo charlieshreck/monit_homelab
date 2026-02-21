@@ -187,6 +187,31 @@ spec:
             summary: "Velero backup partial failure in last 24h"
             description: "{{ $value }} partial backup failure(s) in the last 24 hours."
 
+    # ── Job failure and mount issue alerts ──
+    - name: homelab-jobs-mounts
+      rules:
+        - alert: KubeJobFailuresAccumulating
+          expr: |
+            count by(namespace, reason) (
+              kube_job_status_failed{job="kube-state-metrics"} > 0
+            ) > 3
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Failed jobs accumulating in {{ $labels.namespace }} ({{ $labels.reason }})"
+            description: "{{ $value }} failed jobs with reason {{ $labels.reason }} in namespace {{ $labels.namespace }}. Common reasons: DeadlineExceeded (NFS mount timeout), BackoffLimitExceeded."
+
+        - alert: KubeContainerStuckWaiting
+          expr: |
+            kube_pod_container_status_waiting{job="kube-state-metrics"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} stuck waiting in {{ $labels.namespace }}/{{ $labels.pod }}"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has been in a waiting state for more than 15 minutes. Likely cause: FailedMount (NFS unavailable) or image pull failure."
+
     # ── ArgoCD alerts ──
     - name: homelab-argocd
       rules:
