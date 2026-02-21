@@ -207,8 +207,8 @@ data:
 
       - name: LiteLLM Proxy
         group: AI Platform
-        url: "http://10.20.0.40:30400/health"
-        interval: 30s
+        url: "http://10.20.0.40:30400/health/liveliness"
+        interval: 60s
         conditions:
           - "[STATUS] == 200"
 
