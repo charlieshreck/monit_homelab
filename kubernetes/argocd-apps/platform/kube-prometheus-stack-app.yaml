@@ -199,6 +199,33 @@ spec:
                       cluster: 'production'
                       job: 'node-exporter'
 
+              # ArgoCD Application Controller Metrics (via API server proxy)
+              # Exposes argocd_app_info for sync/health status alerts
+              - job_name: 'argocd-metrics'
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                  insecure_skip_verify: false
+                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                static_configs:
+                  - targets: ['10.10.0.40:6443']
+                    labels:
+                      cluster: 'production'
+                metrics_path: '/api/v1/namespaces/argocd/services/argocd-metrics:8082/proxy/metrics'
+
+              # ArgoCD Server Metrics (via API server proxy)
+              - job_name: 'argocd-server-metrics'
+                scheme: https
+                tls_config:
+                  ca_file: /etc/prometheus/secrets/production-cluster-credentials/ca.crt
+                  insecure_skip_verify: false
+                bearer_token_file: /etc/prometheus/secrets/production-cluster-credentials/token
+                static_configs:
+                  - targets: ['10.10.0.40:6443']
+                    labels:
+                      cluster: 'production'
+                metrics_path: '/api/v1/namespaces/argocd/services/argocd-server-metrics:8083/proxy/metrics'
+
         # Grafana configuration
         grafana:
           enabled: true
