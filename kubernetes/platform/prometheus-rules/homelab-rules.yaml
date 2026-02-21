@@ -102,6 +102,18 @@ spec:
             dashboard_uid: "6581e46e4e5c7ba40a07646395ef7b23"
             panel_id: "1"
 
+        - alert: HomelabPodHighRestartCount
+          expr: |
+            kube_pod_container_status_restarts_total{job="kube-state-metrics"} > 100
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has {{ $value }} total restarts"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has accumulated {{ $value }} restarts. Investigate chronic instability."
+            dashboard_uid: "6581e46e4e5c7ba40a07646395ef7b23"
+            panel_id: "1"
+
         - alert: HomelabPodOOMKilled
           expr: |
             kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
