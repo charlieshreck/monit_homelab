@@ -186,3 +186,26 @@ spec:
           annotations:
             summary: "Velero backup partial failure in last 24h"
             description: "{{ $value }} partial backup failure(s) in the last 24 hours."
+
+    # ── ArgoCD alerts ──
+    - name: homelab-argocd
+      rules:
+        - alert: ArgoCDAppOutOfSync
+          expr: |
+            argocd_app_info{sync_status!="Synced"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} is {{ $labels.sync_status }}"
+            description: "ArgoCD application {{ $labels.name }} (project {{ $labels.project }}) has been {{ $labels.sync_status }} for more than 15 minutes. Health: {{ $labels.health_status }}."
+
+        - alert: ArgoCDAppUnhealthy
+          expr: |
+            argocd_app_info{health_status!~"Healthy|Progressing"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
+            description: "ArgoCD application {{ $labels.name }} (project {{ $labels.project }}) has been {{ $labels.health_status }} for more than 15 minutes."
