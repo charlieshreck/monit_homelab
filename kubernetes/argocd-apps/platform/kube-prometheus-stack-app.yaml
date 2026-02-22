@@ -174,8 +174,8 @@ spec:
                       cluster: 'monitoring'
                 metrics_path: '/metrics'
 
-              # NOTE: claude-agent and claude-validator scrapes REMOVED.
-              # Services are not deployed. Re-add when Phase 4 services deploy.
+              # NOTE: Agentic cluster service scrapes are handled by observability-mcp.
+              # Do not add static scrape configs here.
 
               # Production Talos Cluster - kube-state-metrics (via NodePort)
               - job_name: 'talos-kube-state-metrics'
