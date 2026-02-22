@@ -39,7 +39,7 @@ resource "helm_release" "infisical_operator" {
   name       = "infisical-operator"
   repository = "https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/"
   chart      = "secrets-operator"
-  version    = "0.10.2"
+  version    = "0.10.23"
   namespace  = kubernetes_namespace.infisical_operator.metadata[0].name
 
   depends_on = [

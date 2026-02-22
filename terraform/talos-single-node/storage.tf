@@ -133,7 +133,7 @@ resource "kubernetes_deployment" "local_path_provisioner" {
 
         container {
           name  = "local-path-provisioner"
-          image = "rancher/local-path-provisioner:v0.0.28"
+          image = "rancher/local-path-provisioner:v0.0.34"
 
           command = ["local-path-provisioner", "--debug", "start", "--config", "/etc/config/config.json"]
 
