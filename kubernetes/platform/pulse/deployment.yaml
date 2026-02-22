@@ -35,7 +35,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: pulse
-          image: rcourtman/pulse:5.1.5
+          image: rcourtman/pulse:5.1.10
           ports:
             - name: http
               containerPort: 7655
