@@ -59,6 +59,11 @@ spec:
                 secretKeyRef:
                   name: pulse-credentials
                   key: PASSWORD
+            - name: API_TOKENS
+              valueFrom:
+                secretKeyRef:
+                  name: pulse-credentials
+                  key: API_TOKENS
           volumeMounts:
             - name: data
               mountPath: /data
