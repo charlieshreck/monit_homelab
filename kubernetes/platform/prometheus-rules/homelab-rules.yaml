@@ -212,6 +212,31 @@ spec:
             summary: "Container {{ $labels.container }} stuck waiting in {{ $labels.namespace }}/{{ $labels.pod }}"
             description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has been in a waiting state for more than 15 minutes. Likely cause: FailedMount (NFS unavailable) or image pull failure."
 
+        - alert: NfsMountFailuresAccumulating
+          expr: |
+            count by(namespace) (
+              kube_job_status_failed{job="kube-state-metrics", namespace="media"} > 0
+            ) > 5
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "NFS mount failures accumulating in {{ $labels.namespace }}"
+            description: "{{ $value }} failed jobs in {{ $labels.namespace }}, likely due to NFS mount timeouts (FailedMount). Check TrueNAS-HDD NFS service and network connectivity on 10.40.0.10."
+
+    # ── MCP health alerts ──
+    - name: homelab-mcp-health
+      rules:
+        - alert: McpToolBroken
+          expr: |
+            up{job=~".*mcp.*"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "MCP server {{ $labels.job }} is down"
+            description: "MCP server {{ $labels.job }} has been unreachable for more than 5 minutes. Check agentic cluster ai-platform namespace."
+
     # ── ArgoCD alerts ──
     - name: homelab-argocd
       rules:
