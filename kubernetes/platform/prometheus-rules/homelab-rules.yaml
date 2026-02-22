@@ -224,6 +224,22 @@ spec:
             summary: "NFS mount failures accumulating in {{ $labels.namespace }}"
             description: "{{ $value }} failed jobs in {{ $labels.namespace }}, likely due to NFS mount timeouts (FailedMount). Check TrueNAS-HDD NFS service and network connectivity on 10.40.0.10."
 
+    # ── Warning events accumulating ──
+    - name: homelab-warning-events
+      rules:
+        - alert: WarningEventsAccumulating
+          expr: |
+            (
+              count by(namespace) (kube_pod_container_status_waiting{job="kube-state-metrics"} == 1)
+              + count by(namespace) (kube_job_status_failed{job="kube-state-metrics"} > 0)
+            ) > 10
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Warning events accumulating in {{ $labels.namespace }}"
+            description: "{{ $value }} pods waiting + failed jobs detected in {{ $labels.namespace }}. Common causes: FailedMount (NFS unavailable), DeadlineExceeded (job timeout). Check events with kubectl get events -n {{ $labels.namespace }} --field-selector type=Warning."
+
     # ── MCP health alerts ──
     - name: homelab-mcp-health
       rules:
