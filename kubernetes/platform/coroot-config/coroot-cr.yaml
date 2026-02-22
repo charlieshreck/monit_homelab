@@ -51,6 +51,15 @@ spec:
             name: monit-homelab-api-key
             key: apikey
 
+  # Node agent configuration (monitoring cluster only)
+  nodeAgent:
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: monit-homelab-api-key
+            key: apikey
+
   # Projects for multi-cluster monitoring
   projects:
     - name: prod-homelab
