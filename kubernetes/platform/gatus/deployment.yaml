@@ -276,6 +276,15 @@ data:
         conditions:
           - "[STATUS] == 200"
 
+      - name: Beszel Agent (TrueNAS-HDD)
+        group: Monitoring
+        url: "tcp://10.10.0.103:45876"
+        interval: 120s
+        conditions:
+          - "[CONNECTED] == true"
+        alerts:
+          - type: custom
+
       # Core Applications
       - name: Homepage
         group: Apps
