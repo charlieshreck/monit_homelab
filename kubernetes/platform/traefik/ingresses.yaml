@@ -46,6 +46,33 @@ spec:
                 port:
                   number: 80
 ---
+# Prometheus - User-facing (prometheus.kernow.io)
+# AdGuard rewrite -> 10.10.0.31 (Traefik LB direct)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-external
+  namespace: monitoring
+  annotations:
+    gethomepage.dev/enabled: "false"
+spec:
+  ingressClassName: traefik-monit
+  tls:
+    - hosts:
+        - prometheus.kernow.io
+      secretName: kernow-io-tls
+  rules:
+    - host: prometheus.kernow.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-stack-prometheus
+                port:
+                  number: 9090
+---
 # Prometheus - Internal (prometheus.monit.kernow.io)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -67,7 +94,7 @@ spec:
                   number: 9090
 ---
 # AlertManager - User-facing (alertmanager.kernow.io)
-# Accessed via AdGuard rewrite -> Caddy -> 10.30.0.20:32077
+# AdGuard rewrite -> 10.10.0.31 (Traefik LB direct)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
