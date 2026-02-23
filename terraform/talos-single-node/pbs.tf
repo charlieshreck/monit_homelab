@@ -16,7 +16,7 @@ locals {
     name   = "pbs"
     ip     = "10.10.0.151"
     cores  = 2
-    memory = 2048  # 2GB RAM
+    memory = 4096  # 4GB RAM - increased from 2GB (incident #163: OOM risk during backup)
     disk   = 32    # 32GB boot disk
   }
 }
