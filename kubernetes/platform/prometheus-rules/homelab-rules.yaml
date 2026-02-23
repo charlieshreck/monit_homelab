@@ -100,6 +100,21 @@ spec:
             dashboard_uid: "rYdddlPWk"
             panel_id: "44"
 
+    # ── Deployment-level alerts ──
+    - name: homelab-deployments
+      rules:
+        - alert: HomelabDeploymentUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{job="kube-state-metrics"} == 0
+            and kube_deployment_spec_replicas{job="kube-state-metrics"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has 0 available replicas"
+            description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has 0 available replicas for more than 10 minutes. The application is completely down."
+            runbook: "runbooks/alerts/deployment-unavailable.md"
+
     # ── Pod-level alerts ──
     - name: homelab-pods
       rules:
