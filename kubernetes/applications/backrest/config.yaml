@@ -108,7 +108,7 @@ data:
           },
           "backupFlags": ["--tag", "truenas-media"],
           "commandPrefix": {
-            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.20.0.100"]
+            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.100"]
           }
         },
         {
