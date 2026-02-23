@@ -99,11 +99,26 @@ spec:
               subPath: home
       containers:
         - name: backrest
-          image: garethgeorge/backrest:latest
+          image: garethgeorge/backrest:v1.12.0
+          imagePullPolicy: IfNotPresent
           ports:
             - name: web
               containerPort: 9898
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9898
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9898
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            failureThreshold: 3
           env:
             - name: BACKREST_DATA
               value: /data
