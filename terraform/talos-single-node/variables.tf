@@ -102,20 +102,22 @@ variable "proxmox_iso_storage" {
 variable "monitoring_node" {
   description = "Monitoring node VM configuration"
   type = object({
-    vmid   = number
-    name   = string
-    ip     = string
-    cores  = number
-    memory = number
-    disk   = number
+    vmid           = number
+    name           = string
+    ip             = string
+    cores          = number
+    memory         = number
+    memory_minimum = number
+    disk           = number
   })
   default = {
-    vmid   = 200
-    name   = "talos-monitor"
-    ip     = "10.10.0.30"
-    cores  = 6          # Pihanga has 6C/12T
-    memory = 20480      # 20GB - Pihanga has 28GB total
-    disk   = 50
+    vmid           = 200
+    name           = "talos-monitor"
+    ip             = "10.10.0.30"
+    cores          = 6          # Pihanga has 6C/12T
+    memory         = 20480      # 20GB max - Pihanga has 28GB total
+    memory_minimum = 14336      # 14GB min - balloon reclaims up to 6GB; pod WSS is ~7.2GB so 14GB is safe
+    disk           = 50
   }
 }
 
