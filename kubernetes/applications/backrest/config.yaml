@@ -72,27 +72,7 @@ data:
             "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.50"]
           }
         },
-        {
-          "id": "iac-daily",
-          "repo": "garage-s3",
-          "paths": ["/home", "/root", "/etc"],
-          "excludes": ["/root/.cache", "/home/*/.cache", "/root/.local/share/nvim"],
-          "schedule": {
-            "cron": "0 3 * * *",
-            "clock": "CLOCK_LOCAL"
-          },
-          "retention": {
-            "policyTimeBucketed": {
-              "daily": 14,
-              "weekly": 4
-            }
-          },
-          "backupFlags": ["--tag", "iac"],
-          "commandPrefix": {
-            "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.175"]
-          }
-        },
-        {
+{
           "id": "synapse-daily",
           "repo": "garage-s3",
           "paths": ["/home", "/root", "/etc"],
