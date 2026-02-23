@@ -72,7 +72,7 @@ data:
             "backup": ["ssh", "-o", "StrictHostKeyChecking=no", "root@10.10.0.50"]
           }
         },
-{
+        {
           "id": "synapse-daily",
           "repo": "garage-s3",
           "paths": ["/home", "/root", "/etc"],
