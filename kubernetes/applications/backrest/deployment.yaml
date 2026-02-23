@@ -77,7 +77,7 @@ spec:
               # Plex paths
               mkdir -p "/opt/plex/config/Library/Application Support/Plex Media Server"
               mkdir -p "/opt/plex/compose"
-# Synapse paths
+              # Synapse paths
               mkdir -p "/home/synapse/home"
               mkdir -p "/home/synapse/root"
               mkdir -p "/home/synapse/etc"
