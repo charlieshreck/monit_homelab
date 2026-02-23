@@ -47,8 +47,8 @@ resource "proxmox_virtual_environment_vm" "monitoring_node" {
   }
 
   memory {
-    dedicated = local.node_config.memory         # 20GB max
-    floating  = local.node_config.memory_minimum # 14GB min - balloon reclaims up to 6GB when host is under pressure
+    dedicated = local.node_config.memory         # 24GB max
+    floating  = local.node_config.memory_minimum # 18GB min - balloon reclaims up to 6GB when host is under pressure
   }
 
   bios = "ovmf"

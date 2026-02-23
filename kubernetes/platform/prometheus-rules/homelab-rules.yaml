@@ -303,3 +303,28 @@ spec:
           annotations:
             summary: "ArgoCD app {{ $labels.name }} is {{ $labels.health_status }}"
             description: "ArgoCD application {{ $labels.name }} (project {{ $labels.project }}) has been {{ $labels.health_status }} for more than 15 minutes."
+
+    # ── Monitoring cluster VM memory (single-node - no rescheduling possible) ──
+    - name: homelab-monit-vm-memory
+      rules:
+        - alert: MonitNodeHighMemoryWarning
+          expr: |
+            (1 - node_memory_MemAvailable_bytes{instance="talos-monitor:9100"} / node_memory_MemTotal_bytes{instance="talos-monitor:9100"}) > 0.80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "talos-monitor VM memory above 80% - early warning"
+            description: "Memory at {{ $value | humanizePercentage }} on talos-monitor. This is a single-node cluster with no rescheduling — OOM will crash all monitoring workloads. Increase VM memory or reduce workload limits."
+            runbook: "runbooks/infrastructure/monitoring-vm-high-memory.md"
+
+        - alert: MonitNodeCriticalMemoryOomRisk
+          expr: |
+            (1 - node_memory_MemAvailable_bytes{instance="talos-monitor:9100"} / node_memory_MemTotal_bytes{instance="talos-monitor:9100"}) > 0.90
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "talos-monitor VM memory above 90% - OOM risk"
+            description: "Memory at {{ $value | humanizePercentage }} on talos-monitor. OOM kill will crash the monitoring cluster. Immediate action required: check ClickHouse, Prometheus, VictoriaMetrics usage."
+            runbook: "runbooks/infrastructure/monitoring-vm-high-memory.md"

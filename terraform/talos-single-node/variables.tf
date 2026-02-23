@@ -115,8 +115,8 @@ variable "monitoring_node" {
     name           = "talos-monitor"
     ip             = "10.10.0.30"
     cores          = 6          # Pihanga has 6C/12T
-    memory         = 20480      # 20GB max - Pihanga has 28GB total
-    memory_minimum = 14336      # 14GB min - balloon reclaims up to 6GB; pod WSS is ~7.2GB so 14GB is safe
+    memory         = 24576      # 24GB max - Pihanga has 28GB total; pbs=2GB, host=2GB overhead
+    memory_minimum = 18432      # 18GB min - workload baseline grew beyond 14GB with Coroot+Prometheus+VM+VL
     disk           = 50
   }
 }
