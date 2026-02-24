@@ -359,6 +359,17 @@ spec:
                 - match:
                     alertname: 'Watchdog'
                   receiver: 'null'
+                # NodeSystemSaturation on talos-worker-03 is expected behavior:
+                # Mayastor io-engine uses SPDK busy-polling reactor threads pinned to
+                # CPUs 1 and 2 (-l1,2). These threads are always in the run queue,
+                # creating a constant ~2.0 baseline load average even when idle.
+                # Worker-03 has higher nexus load as it was the sole storage node
+                # before Feb 19 2026. Node is healthy; this is a false positive.
+                # Runbook: agentic_lab/runbooks/infrastructure/mayastor-node-saturation.md
+                - match:
+                    alertname: 'NodeSystemSaturation'
+                    instance: '10.10.0.43:9100'
+                  receiver: 'null'
                 # Info alerts go to null
                 - match:
                     alertname: 'InfoInhibitor'
