@@ -7,6 +7,11 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: monitoring
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt
   source:
     repoURL: https://github.com/charlieshreck/monit_homelab.git
     targetRevision: main
