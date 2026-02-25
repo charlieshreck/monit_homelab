@@ -103,7 +103,7 @@ spec:
               cpu: 500m
               memory: 512Mi
         - name: kube-state-metrics
-          image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.10.1
+          image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.18.0
           args:
             - --host=127.0.0.1
             - --port=10302
