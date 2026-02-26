@@ -110,4 +110,5 @@ spec:
       protocol: TCP
       port: 7655
       targetPort: 7655
-  type: ClusterIP
+      nodePort: 31655
+  type: NodePort
