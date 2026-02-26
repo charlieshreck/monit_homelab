@@ -438,6 +438,18 @@ spec:
         kubeStateMetrics:
           enabled: true
 
+        # kube-state-metrics resource requests prevent BestEffort QoS (eviction during I/O storms)
+        # Exit code 2 crashes during PBS backup window (02:45 Pihanga I/O contention) were traced
+        # to BestEffort eviction + API server slowness. Burstable QoS reduces eviction risk.
+        kube-state-metrics:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
         # DISABLED: Talos control plane not exposed as pods
         # These ServiceMonitors cause TargetDown alerts
         kubeScheduler:
