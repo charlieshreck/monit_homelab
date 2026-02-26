@@ -132,7 +132,9 @@ spec:
       rules:
         - alert: HomelabPodCrashLooping
           expr: |
-            increase(kube_pod_container_status_restarts_total[1h]) > 5
+            increase(kube_pod_container_status_restarts_total{
+              pod!~"kube-scheduler-.*|kube-controller-manager-.*|kube-apiserver-.*|etcd-.*"
+            }[1h]) > 5
           for: 15m
           labels:
             severity: warning
