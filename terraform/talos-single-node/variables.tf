@@ -115,7 +115,7 @@ variable "monitoring_node" {
     name           = "talos-monitor"
     ip             = "10.10.0.30"
     cores          = 6          # Pihanga has 6C/12T
-    memory         = 24576      # 24GB max - Pihanga has 28GB total; pbs=2GB, host=2GB overhead
+    memory         = 24576      # 24GB max - Pihanga has 28GB total; pbs=4GB (was 2GB, raised for OOM), host=3-4GB overhead → node runs ~93% memory (expected, services healthy)
     memory_minimum = 18432      # 18GB min - workload baseline grew beyond 14GB with Coroot+Prometheus+VM+VL
     disk           = 50
   }
