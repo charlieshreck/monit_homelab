@@ -424,13 +424,6 @@ data:
         conditions:
           - "[STATUS] == 200"
 
-      # Kernow Hub (Agentic cluster)
-      - name: Kernow Hub
-        group: AI Platform
-        url: "http://10.20.0.40:30456/health"
-        interval: 60s
-        conditions:
-          - "[STATUS] == 200"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
