@@ -444,10 +444,7 @@ data:
         url: "https://huntarr.kernow.io"
         interval: 120s
         conditions:
-          - "[STATUS] == any(200, 503)"
-        alerts:
-          - type: custom
-            enabled: false
+          - "[STATUS] == 200"
 
       - name: Maintainerr
         group: Media
