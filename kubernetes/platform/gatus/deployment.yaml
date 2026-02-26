@@ -426,7 +426,7 @@ data:
 
       - name: SilverBullet
         group: Notes
-        url: "https://silverbullet.kernow.io"
+        url: "http://silverbullet.agentic.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -529,14 +529,14 @@ data:
       # Monitoring (additional)
       - name: Pulse
         group: Monitoring
-        url: "http://pulse.monitoring.svc:3000"
+        url: "http://pulse.monitoring.svc:7655"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
 
       - name: Tugtainer
         group: Monitoring
-        url: "http://tugtainer.monitoring.svc:3000"
+        url: "http://tugtainer.monitoring.svc:80"
         interval: 120s
         conditions:
           - "[STATUS] == 200"
