@@ -424,6 +424,172 @@ data:
         conditions:
           - "[STATUS] == 200"
 
+      - name: SilverBullet
+        group: Notes
+        url: "https://silverbullet.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Vikunja
+        group: Notes
+        url: "https://vikunja.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Media Stack (additional)
+      - name: Huntarr
+        group: Media
+        url: "https://huntarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Maintainerr
+        group: Media
+        url: "https://maintainerr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Notifiarr
+        group: Media
+        url: "https://notifiarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] < 400"
+
+      - name: Recommendarr
+        group: Media
+        url: "https://recommendarr.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == any(200, 404)"
+
+      - name: Plex
+        group: Media
+        url: "http://10.10.0.50:32400/identity"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Home Automation (additional)
+      - name: MQTT (Mosquitto)
+        group: Home Automation
+        url: "tcp://10.10.0.91:1883"
+        interval: 60s
+        conditions:
+          - "[CONNECTED] == true"
+
+      # AI Platform (additional)
+      - name: Error Hunter
+        group: AI Platform
+        url: "http://10.20.0.40:30801/health"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: OpenWebUI
+        group: AI Platform
+        url: "http://10.20.0.40:31120"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # AI Platform — Data Stores
+      - name: PostgreSQL
+        group: Data Stores
+        url: "tcp://10.20.0.40:30543"
+        interval: 60s
+        conditions:
+          - "[CONNECTED] == true"
+
+      - name: Qdrant
+        group: Data Stores
+        url: "http://10.20.0.40:30633/healthz"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Redis
+        group: Data Stores
+        url: "tcp://10.20.0.40:30637"
+        interval: 60s
+        conditions:
+          - "[CONNECTED] == true"
+
+      - name: Neo4j
+        group: Data Stores
+        url: "http://10.20.0.40:31582"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      # Monitoring (additional)
+      - name: Pulse
+        group: Monitoring
+        url: "http://pulse.monitoring.svc:3000"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Tugtainer
+        group: Monitoring
+        url: "http://tugtainer.monitoring.svc:3000"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      # External Services
+      - name: OPNsense
+        group: Infrastructure
+        url: "https://10.10.0.1:8443"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+        client:
+          insecure: true
+
+      - name: Omada Controller
+        group: Infrastructure
+        url: "https://10.10.0.3:8043"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+        client:
+          insecure: true
+
+      - name: Tamar
+        group: Apps
+        url: "https://tamar.kernow.io"
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: TrueNAS Media
+        group: Storage
+        url: "https://10.10.0.100:443"
+        interval: 120s
+        conditions:
+          - "[STATUS] == any(200, 301, 302)"
+        client:
+          insecure: true
+
+      - name: Haute Banque
+        group: Apps
+        url: "https://haute-banque.kernow.io"
+        interval: 120s
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Unbound DNS
+        group: Network
+        url: "tcp://10.10.0.1:53535"
+        interval: 120s
+        conditions:
+          - "[CONNECTED] == true"
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
