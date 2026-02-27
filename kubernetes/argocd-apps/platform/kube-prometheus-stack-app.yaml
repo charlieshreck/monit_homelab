@@ -374,6 +374,17 @@ spec:
                 - match:
                     alertname: 'InfoInhibitor'
                   receiver: 'null'
+                # kube-state-metrics TargetDown during PBS backup window (01:00-05:00 UTC):
+                # I/O contention on Ruapehu/Pihanga causes transient API server slowness
+                # → ksm crashes with exit code 2 → always self-heals within 30 min.
+                # Incidents #114 and #349 confirmed this is a known false positive.
+                # Alert remains active outside this window for genuine outages.
+                - match:
+                    alertname: 'TargetDown'
+                    job: 'kube-state-metrics'
+                  active_time_intervals:
+                    - pbs-backup-window
+                  receiver: 'null'
                 # Renovate CronJob leaves stuck pods - expected
                 - match:
                     alertname: 'KubeJobNotCompleted'
@@ -403,6 +414,16 @@ spec:
                     send_resolved: true
                     http_config:
                       follow_redirects: true
+            time_intervals:
+              # PBS backup window: both Ruapehu and Pihanga run vzdump at 02:00 UTC.
+              # Heavy I/O causes API server slowness → kube-state-metrics exit code 2 crashes.
+              # ksm always self-heals within 30 minutes. Suppress TargetDown noise during this window.
+              - name: pbs-backup-window
+                time_intervals:
+                  - times:
+                      - start_time: '01:00'
+                        end_time: '05:00'
+
             inhibit_rules:
               - source_matchers:
                   - severity = critical
