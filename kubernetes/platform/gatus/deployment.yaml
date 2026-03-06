@@ -439,13 +439,6 @@ data:
           - "[STATUS] == 200"
 
       # Media Stack (additional)
-      - name: Huntarr
-        group: Media
-        url: "https://huntarr.kernow.io"
-        interval: 120s
-        conditions:
-          - "[STATUS] == 200"
-
       - name: Maintainerr
         group: Media
         url: "https://maintainerr.kernow.io"
