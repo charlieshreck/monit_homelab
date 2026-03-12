@@ -173,10 +173,10 @@ data:
       # Storage — TrueNAS health checks
       - name: PBS (Backup Server)
         group: Infrastructure
-        url: "https://10.10.0.151:8007"
+        url: "https://10.10.0.151:8007/api2/json/version"
         interval: 120s
         conditions:
-          - "[STATUS] == 200"
+          - "[STATUS] == 401"
         client:
           insecure: true
 
