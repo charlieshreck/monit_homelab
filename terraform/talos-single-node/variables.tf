@@ -122,16 +122,19 @@ variable "monitoring_node" {
 }
 
 # Infisical Operator Credentials
+# NOTE: Kept for .tfvars compatibility. Operator now managed by ArgoCD.
 variable "infisical_client_id" {
-  description = "Infisical universal auth client ID"
+  description = "Infisical universal auth client ID (unused — ArgoCD manages operator)"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "infisical_client_secret" {
-  description = "Infisical universal auth client secret"
+  description = "Infisical universal auth client secret (unused — ArgoCD manages operator)"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 # Cilium LoadBalancer Configuration

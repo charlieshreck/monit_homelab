@@ -22,17 +22,8 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.13"
     }
-    infisical = {
-      source  = "infisical/infisical"
-      version = "~> 0.16"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 3.0"
-    }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.19"
-    }
+    # NOTE: helm, kubectl, kubernetes, infisical providers removed.
+    # All K8s resources now managed by ArgoCD. See bootstrap notes in
+    # cilium.tf, infisical.tf, storage.tf.
   }
 }

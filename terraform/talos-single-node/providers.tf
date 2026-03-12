@@ -13,17 +13,6 @@ provider "proxmox" {
 
 provider "talos" {}
 
-provider "helm" {
-  kubernetes = {
-    config_path = "${path.module}/generated/kubeconfig"
-  }
-}
-
-provider "kubectl" {
-  config_path      = "${path.module}/generated/kubeconfig"
-  load_config_file = true
-}
-
-provider "kubernetes" {
-  config_path = "${path.module}/generated/kubeconfig"
-}
+# NOTE: helm, kubectl, and kubernetes providers removed.
+# K8s resources are now managed exclusively by ArgoCD.
+# See cilium.tf, infisical.tf, storage.tf for bootstrap instructions.

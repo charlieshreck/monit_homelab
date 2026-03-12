@@ -74,6 +74,10 @@ resource "proxmox_virtual_environment_vm" "pbs" {
     interface = "ide2"
   }
 
+  agent {
+    enabled = true
+  }
+
   # BIOS settings
   bios = "seabios"
 

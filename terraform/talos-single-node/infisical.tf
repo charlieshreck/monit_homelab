@@ -1,48 +1,16 @@
 # ============================================================================
-# Infisical Operator - Bootstrap via Terraform
+# Infisical Operator — MIGRATED TO ARGOCD
 # ============================================================================
-# CRITICAL: Deploy Infisical operator BEFORE ArgoCD registration
-# This solves the chicken-and-egg problem: apps need secrets, secrets need operator
+# The Infisical operator was originally bootstrapped here via Terraform to
+# solve the chicken-and-egg problem (apps need secrets, secrets need operator).
+#
+# Now managed by ArgoCD (infisical-operator-monit application).
+#
+# For initial cluster bootstrap:
+#   1. Create namespace: kubectl create ns infisical-operator-system
+#   2. Create secret:    kubectl create secret generic universal-auth-credentials \
+#        -n infisical-operator-system --from-literal=clientId=... --from-literal=clientSecret=...
+#   3. Install helm:     helm install infisical-operator infisical/secrets-operator \
+#        -n infisical-operator-system
+#   4. Register with ArgoCD and let it take over.
 # ============================================================================
-
-# Create infisical-operator-system namespace
-resource "kubernetes_namespace" "infisical_operator" {
-  metadata {
-    name = "infisical-operator-system"
-  }
-
-  depends_on = [
-    data.talos_cluster_health.this,
-  ]
-}
-
-# Create universal-auth-credentials secret
-resource "kubernetes_secret" "infisical_universal_auth" {
-  metadata {
-    name      = "universal-auth-credentials"
-    namespace = kubernetes_namespace.infisical_operator.metadata[0].name
-  }
-
-  type = "Opaque"
-
-  data = {
-    clientId     = var.infisical_client_id
-    clientSecret = var.infisical_client_secret
-  }
-}
-
-# NOTE: MCP servers only run in agentic cluster, not monit
-# The mcp-servers namespace credentials are managed in agentic_lab
-
-# Deploy Infisical operator via Helm
-resource "helm_release" "infisical_operator" {
-  name       = "infisical-operator"
-  repository = "https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/"
-  chart      = "secrets-operator"
-  version    = "0.10.26"
-  namespace  = kubernetes_namespace.infisical_operator.metadata[0].name
-
-  depends_on = [
-    kubernetes_secret.infisical_universal_auth,
-  ]
-}
