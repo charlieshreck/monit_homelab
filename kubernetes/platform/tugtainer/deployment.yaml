@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: tugtainer
-          image: ghcr.io/quenary/tugtainer:1
+          image: ghcr.io/quenary/tugtainer:1.25.1
           ports:
             - name: web
               containerPort: 80
