@@ -419,7 +419,7 @@ data:
 
       - name: Outline
         group: Notes
-        url: "https://outline.kernow.io"
+        url: "http://outline.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -433,7 +433,7 @@ data:
 
       - name: Vikunja
         group: Notes
-        url: "https://vikunja.kernow.io"
+        url: "http://vikunja.kernow.io"
         interval: 60s
         conditions:
           - "[STATUS] == 200"
@@ -470,7 +470,7 @@ data:
       # Home Automation (additional)
       - name: MQTT (Mosquitto)
         group: Home Automation
-        url: "tcp://10.10.0.91:1883"
+        url: "tcp://10.10.0.93:1883"
         interval: 60s
         conditions:
           - "[CONNECTED] == true"
